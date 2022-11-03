@@ -42,11 +42,11 @@ const (
 	peerStartWaitTimeout        = 30 * time.Second
 )
 
-// Gives access to basic node info, and to most avalanchego apis
+// Gives access to basic node info, and to most caminogo apis
 type localNode struct {
 	// Must be unique across all nodes in this network.
 	name string
-	// [nodeID] is this node's Avalannche Node ID.
+	// [nodeID] is this node's Camino Node ID.
 	// Set in network.AddNode
 	nodeID ids.NodeID
 	// The ID of the network this node exists in
@@ -152,11 +152,17 @@ func (node *localNode) AttachPeer(ctx context.Context, router router.InboundHand
 		return nil, err
 	}
 
+	// Get the nodeID from certificate (secp256k1 public key)
+	nodeID, err := peer.CertToID(tlsCert.Leaf)
+	if err != nil {
+		return nil, fmt.Errorf("cannot extract nodeID from certificate: %w", err)
+	}
+
 	p := peer.Start(
 		config,
 		conn,
 		cert,
-		ids.NodeIDFromCert(tlsCert.Leaf),
+		nodeID,
 		peer.NewBlockingMessageQueue(
 			config.Metrics,
 			logging.NoLog{},

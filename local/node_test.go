@@ -151,7 +151,7 @@ func readMessage(nodeConn net.Conn, errCh chan error) (*bytes.Buffer, error) {
 	return msgBytes, nil
 }
 
-// sendMessage sends a protocol message to the avalanchego peer
+// sendMessage sends a protocol message to the camino peer
 func sendMessage(nodeConn net.Conn, msgBytes []byte, errCh chan error) error {
 	// buffer for message length
 	msgLenBytes := make([]byte, wrappers.IntLen)

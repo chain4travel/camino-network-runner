@@ -479,7 +479,7 @@ func setupWallet(
 
 // add the nodes in [nodeInfos] as validators of the primary network, in case they are not
 // the validation starts as soon as possible and its duration is as long as possible, that is,
-// it is set to max accepted duration by avalanchego
+// it is set to max accepted duration by caminogo
 func (ln *localNetwork) addPrimaryValidators(
 	ctx context.Context,
 	platformCli platformvm.Client,

@@ -60,7 +60,7 @@ var (
 	}
 	chainConfigSubDir = "chainConfigs"
 
-	snapshotsRelPath = filepath.Join(".avalanche-network-runner", "snapshots")
+	snapshotsRelPath = filepath.Join(".camino-network-runner", "snapshots")
 
 	ErrSnapshotNotFound = errors.New("snapshot not found")
 )
@@ -523,7 +523,7 @@ func (ln *localNetwork) addNode(nodeConfig node.Config) (node.Node, error) {
 		return nil, fmt.Errorf("couldn't get node ID: %w", err)
 	}
 
-	// Start the AvalancheGo node and pass it the flags defined above
+	// Start the camino node and pass it the flags defined above
 	nodeProcess, err := ln.nodeProcessCreator.NewNodeProcess(nodeConfig, nodeData.flags...)
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -902,7 +902,7 @@ func (ln *localNetwork) buildFlags(
 		return buildFlagsReturn{}, err
 	}
 
-	// Flags for AvalancheGo
+	// Flags for CaminoNode
 	flags := []string{
 		fmt.Sprintf("--%s=%d", config.NetworkNameKey, ln.networkID),
 		fmt.Sprintf("--%s=%s", config.DBPathKey, dbDir),

@@ -88,15 +88,15 @@ func init() {
 	)
 	flag.StringVar(
 		&execPath1,
-		"avalanchego-path-1",
+		"camino-node-path-1",
 		"",
-		"avalanchego executable path (to upgrade from)",
+		"camino-node executable path (to upgrade from)",
 	)
 	flag.StringVar(
 		&execPath2,
-		"avalanchego-path-2",
+		"camino-node-path-2",
 		"",
-		"avalanchego executable path (to upgrade to)",
+		"camino-node executable path (to upgrade to)",
 	)
 	flag.StringVar(
 		&subnetEvmPath,
@@ -146,125 +146,6 @@ var _ = ginkgo.AfterSuite(func() {
 })
 
 var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
-	ginkgo.It("can create blockhains", func() {
-		existingSubnetID := ""
-		ginkgo.By("start with blockchain specs", func() {
-			ux.Print(log, logging.Green.Wrap("sending 'start' with the valid binary path: %s"), execPath2)
-			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-			resp, err := cli.Start(ctx, execPath2,
-				client.WithBlockchainSpecs([]*rpcpb.BlockchainSpec{
-					{
-						VmName:  "subnetevm",
-						Genesis: "tests/e2e/subnet-evm-genesis.json",
-					},
-				}),
-			)
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-			ux.Print(log, logging.Green.Wrap("successfully started, node-names: %s"), resp.ClusterInfo.NodeNames)
-		})
-
-		ginkgo.By("wait for custom chains healthy", func() {
-			// ignore subnet ID here
-			_ = waitForCustomChainsHealthy()
-		})
-
-		ginkgo.By("can create a blockchain with a new subnet id", func() {
-			ux.Print(log, logging.Blue.Wrap("can create a blockchain in a new subnet"))
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.CreateBlockchains(ctx,
-				[]*rpcpb.BlockchainSpec{
-					{
-						VmName:  "subnetevm",
-						Genesis: "tests/e2e/subnet-evm-genesis.json",
-					},
-				},
-			)
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-
-		ginkgo.By("get subnet ID", func() {
-			existingSubnetID = waitForCustomChainsHealthy()
-		})
-
-		ginkgo.By("can create a blockchain with an existing subnet id", func() {
-			ux.Print(log, logging.Blue.Wrap("can create a blockchain in an existing subnet"))
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.CreateBlockchains(ctx,
-				[]*rpcpb.BlockchainSpec{
-					{
-						VmName:   "subnetevm",
-						Genesis:  "tests/e2e/subnet-evm-genesis.json",
-						SubnetId: &existingSubnetID,
-					},
-				},
-			)
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-
-		ginkgo.By("wait for custom chains healthy", func() {
-			// ignore subnet ID here
-			_ = waitForCustomChainsHealthy()
-		})
-
-		ginkgo.By("can save snapshot", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.SaveSnapshot(ctx, "test")
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-
-		ginkgo.By("can load snapshot", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.LoadSnapshot(ctx, "test")
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-
-		ginkgo.By("wait for custom chains healthy", func() {
-			// ignore subnet ID here
-			_ = waitForCustomChainsHealthy()
-		})
-
-		// need to remove the snapshot otherwise it fails later in the 2nd part of snapshot tests
-		// (testing for no snapshots)
-		ginkgo.By("can remove snapshot", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.RemoveSnapshot(ctx, "test")
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-		ginkgo.By("can create a blockchain with an existing subnet id", func() {
-			ux.Print(log, logging.Blue.Wrap("can create a blockchain in an existing subnet"))
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.CreateBlockchains(ctx,
-				[]*rpcpb.BlockchainSpec{
-					{
-						VmName:   "subnetevm",
-						Genesis:  "tests/e2e/subnet-evm-genesis.json",
-						SubnetId: &existingSubnetID,
-					},
-				},
-			)
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-
-		ginkgo.By("wait for custom chains healthy", func() {
-			// ignore subnet ID here
-			_ = waitForCustomChainsHealthy()
-		})
-
-		ginkgo.By("stop the network", func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, err := cli.Stop(ctx)
-			cancel()
-			gomega.Ω(err).Should(gomega.BeNil())
-		})
-	})
-
 	ginkgo.It("can start", func() {
 		ginkgo.By("start request with invalid exec path should fail", func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

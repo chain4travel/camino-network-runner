@@ -1,12 +1,12 @@
 # ref. https://goreleaser.com/customization/build/
 builds:
-  - id: avalanche-network-runner
+  - id: camino-network-runner
     main: ./main.go
-    binary: avalanche-network-runner
+    binary: camino-network-runner
     flags:
       - -v
     ldflags:
-      - -X 'github.com/ava-labs/avalanche-network-runner/cmd.Version={{.Version}}'
+      - -X 'github.com/chain4travel/camino-network-runner/cmd.Version={{.Version}}'
     goos:
       - linux
       - darwin
@@ -34,5 +34,5 @@ release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
   github:
-    owner: ava-labs
-    name: avalanche-network-runner
+    owner: chain4travel
+    name: camino-network-runner

@@ -22,7 +22,7 @@ const (
 	removeNodeTimeout = 10 * time.Second
 )
 
-var goPath = os.ExpandEnv("$GOPATH")
+var caminoNodePath = os.ExpandEnv("$CAMINO_NODE_PATH")
 
 // Blocks until a signal is received on [signalChan], upon which
 // [n.Stop()] is called. If [signalChan] is closed, does nothing.
@@ -44,8 +44,8 @@ func shutdownOnSignal(
 	close(closedOnShutdownChan)
 }
 
-// Shows example usage of the Avalanche Network Runner.
-// Creates a local five node Avalanche network
+// Shows example usage of the Camino Network Runner.
+// Creates a local five node Camino network
 // and waits for all nodes to become healthy.
 // Then, we:
 // * print the names of the nodes
@@ -64,8 +64,13 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	binaryPath := fmt.Sprintf("%s%s", goPath, "/src/github.com/ava-labs/avalanchego/build/avalanchego")
-	if err := run(log, binaryPath); err != nil {
+
+	if caminoNodePath == "" {
+		log.Fatal("fatal error, CAMINO_NODE_PATH is not set")
+		os.Exit(1)
+	}
+
+	if err := run(log, caminoNodePath); err != nil {
 		log.Fatal("fatal error", zap.Error(err))
 		os.Exit(1)
 	}

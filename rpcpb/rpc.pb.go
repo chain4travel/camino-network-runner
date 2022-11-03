@@ -7,11 +7,12 @@
 package rpcpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -232,7 +233,7 @@ type CustomChainInfo struct {
 	// VM ID in "ids.ID" format.
 	VmId string `protobuf:"bytes,2,opt,name=vm_id,json=vmId,proto3" json:"vm_id,omitempty"`
 	// Create subnet transaction ID -- subnet ID.
-	// The subnet ID must be whitelisted by the avalanche node.
+	// The subnet ID must be whitelisted by the camino node.
 	SubnetId string `protobuf:"bytes,3,opt,name=subnet_id,json=subnetId,proto3" json:"subnet_id,omitempty"`
 	// Create blockchain transaction ID -- blockchain ID>
 	// The blockchain ID is used for RPC endpoints.
@@ -2933,63 +2934,65 @@ func file_rpcpb_rpc_proto_rawDescGZIP() []byte {
 	return file_rpcpb_rpc_proto_rawDescData
 }
 
-var file_rpcpb_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
-var file_rpcpb_rpc_proto_goTypes = []interface{}{
-	(*PingRequest)(nil),                 // 0: rpcpb.PingRequest
-	(*PingResponse)(nil),                // 1: rpcpb.PingResponse
-	(*ClusterInfo)(nil),                 // 2: rpcpb.ClusterInfo
-	(*CustomChainInfo)(nil),             // 3: rpcpb.CustomChainInfo
-	(*NodeInfo)(nil),                    // 4: rpcpb.NodeInfo
-	(*AttachedPeerInfo)(nil),            // 5: rpcpb.AttachedPeerInfo
-	(*ListOfAttachedPeerInfo)(nil),      // 6: rpcpb.ListOfAttachedPeerInfo
-	(*StartRequest)(nil),                // 7: rpcpb.StartRequest
-	(*StartResponse)(nil),               // 8: rpcpb.StartResponse
-	(*BlockchainSpec)(nil),              // 9: rpcpb.BlockchainSpec
-	(*CreateBlockchainsRequest)(nil),    // 10: rpcpb.CreateBlockchainsRequest
-	(*CreateBlockchainsResponse)(nil),   // 11: rpcpb.CreateBlockchainsResponse
-	(*CreateSubnetsRequest)(nil),        // 12: rpcpb.CreateSubnetsRequest
-	(*CreateSubnetsResponse)(nil),       // 13: rpcpb.CreateSubnetsResponse
-	(*HealthRequest)(nil),               // 14: rpcpb.HealthRequest
-	(*HealthResponse)(nil),              // 15: rpcpb.HealthResponse
-	(*URIsRequest)(nil),                 // 16: rpcpb.URIsRequest
-	(*URIsResponse)(nil),                // 17: rpcpb.URIsResponse
-	(*StatusRequest)(nil),               // 18: rpcpb.StatusRequest
-	(*StatusResponse)(nil),              // 19: rpcpb.StatusResponse
-	(*StreamStatusRequest)(nil),         // 20: rpcpb.StreamStatusRequest
-	(*StreamStatusResponse)(nil),        // 21: rpcpb.StreamStatusResponse
-	(*RestartNodeRequest)(nil),          // 22: rpcpb.RestartNodeRequest
-	(*RestartNodeResponse)(nil),         // 23: rpcpb.RestartNodeResponse
-	(*RemoveNodeRequest)(nil),           // 24: rpcpb.RemoveNodeRequest
-	(*RemoveNodeResponse)(nil),          // 25: rpcpb.RemoveNodeResponse
-	(*AddNodeRequest)(nil),              // 26: rpcpb.AddNodeRequest
-	(*AddNodeResponse)(nil),             // 27: rpcpb.AddNodeResponse
-	(*StopRequest)(nil),                 // 28: rpcpb.StopRequest
-	(*StopResponse)(nil),                // 29: rpcpb.StopResponse
-	(*AttachPeerRequest)(nil),           // 30: rpcpb.AttachPeerRequest
-	(*AttachPeerResponse)(nil),          // 31: rpcpb.AttachPeerResponse
-	(*SendOutboundMessageRequest)(nil),  // 32: rpcpb.SendOutboundMessageRequest
-	(*SendOutboundMessageResponse)(nil), // 33: rpcpb.SendOutboundMessageResponse
-	(*SaveSnapshotRequest)(nil),         // 34: rpcpb.SaveSnapshotRequest
-	(*SaveSnapshotResponse)(nil),        // 35: rpcpb.SaveSnapshotResponse
-	(*LoadSnapshotRequest)(nil),         // 36: rpcpb.LoadSnapshotRequest
-	(*LoadSnapshotResponse)(nil),        // 37: rpcpb.LoadSnapshotResponse
-	(*RemoveSnapshotRequest)(nil),       // 38: rpcpb.RemoveSnapshotRequest
-	(*RemoveSnapshotResponse)(nil),      // 39: rpcpb.RemoveSnapshotResponse
-	(*GetSnapshotNamesRequest)(nil),     // 40: rpcpb.GetSnapshotNamesRequest
-	(*GetSnapshotNamesResponse)(nil),    // 41: rpcpb.GetSnapshotNamesResponse
-	nil,                                 // 42: rpcpb.ClusterInfo.NodeInfosEntry
-	nil,                                 // 43: rpcpb.ClusterInfo.AttachedPeerInfosEntry
-	nil,                                 // 44: rpcpb.ClusterInfo.CustomChainsEntry
-	nil,                                 // 45: rpcpb.StartRequest.CustomNodeConfigsEntry
-	nil,                                 // 46: rpcpb.StartRequest.ChainConfigsEntry
-	nil,                                 // 47: rpcpb.StartRequest.UpgradeConfigsEntry
-	nil,                                 // 48: rpcpb.RestartNodeRequest.ChainConfigsEntry
-	nil,                                 // 49: rpcpb.RestartNodeRequest.UpgradeConfigsEntry
-	nil,                                 // 50: rpcpb.AddNodeRequest.ChainConfigsEntry
-	nil,                                 // 51: rpcpb.AddNodeRequest.UpgradeConfigsEntry
-	nil,                                 // 52: rpcpb.LoadSnapshotRequest.ChainConfigsEntry
-	nil,                                 // 53: rpcpb.LoadSnapshotRequest.UpgradeConfigsEntry
-}
+var (
+	file_rpcpb_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
+	file_rpcpb_rpc_proto_goTypes  = []interface{}{
+		(*PingRequest)(nil),                 // 0: rpcpb.PingRequest
+		(*PingResponse)(nil),                // 1: rpcpb.PingResponse
+		(*ClusterInfo)(nil),                 // 2: rpcpb.ClusterInfo
+		(*CustomChainInfo)(nil),             // 3: rpcpb.CustomChainInfo
+		(*NodeInfo)(nil),                    // 4: rpcpb.NodeInfo
+		(*AttachedPeerInfo)(nil),            // 5: rpcpb.AttachedPeerInfo
+		(*ListOfAttachedPeerInfo)(nil),      // 6: rpcpb.ListOfAttachedPeerInfo
+		(*StartRequest)(nil),                // 7: rpcpb.StartRequest
+		(*StartResponse)(nil),               // 8: rpcpb.StartResponse
+		(*BlockchainSpec)(nil),              // 9: rpcpb.BlockchainSpec
+		(*CreateBlockchainsRequest)(nil),    // 10: rpcpb.CreateBlockchainsRequest
+		(*CreateBlockchainsResponse)(nil),   // 11: rpcpb.CreateBlockchainsResponse
+		(*CreateSubnetsRequest)(nil),        // 12: rpcpb.CreateSubnetsRequest
+		(*CreateSubnetsResponse)(nil),       // 13: rpcpb.CreateSubnetsResponse
+		(*HealthRequest)(nil),               // 14: rpcpb.HealthRequest
+		(*HealthResponse)(nil),              // 15: rpcpb.HealthResponse
+		(*URIsRequest)(nil),                 // 16: rpcpb.URIsRequest
+		(*URIsResponse)(nil),                // 17: rpcpb.URIsResponse
+		(*StatusRequest)(nil),               // 18: rpcpb.StatusRequest
+		(*StatusResponse)(nil),              // 19: rpcpb.StatusResponse
+		(*StreamStatusRequest)(nil),         // 20: rpcpb.StreamStatusRequest
+		(*StreamStatusResponse)(nil),        // 21: rpcpb.StreamStatusResponse
+		(*RestartNodeRequest)(nil),          // 22: rpcpb.RestartNodeRequest
+		(*RestartNodeResponse)(nil),         // 23: rpcpb.RestartNodeResponse
+		(*RemoveNodeRequest)(nil),           // 24: rpcpb.RemoveNodeRequest
+		(*RemoveNodeResponse)(nil),          // 25: rpcpb.RemoveNodeResponse
+		(*AddNodeRequest)(nil),              // 26: rpcpb.AddNodeRequest
+		(*AddNodeResponse)(nil),             // 27: rpcpb.AddNodeResponse
+		(*StopRequest)(nil),                 // 28: rpcpb.StopRequest
+		(*StopResponse)(nil),                // 29: rpcpb.StopResponse
+		(*AttachPeerRequest)(nil),           // 30: rpcpb.AttachPeerRequest
+		(*AttachPeerResponse)(nil),          // 31: rpcpb.AttachPeerResponse
+		(*SendOutboundMessageRequest)(nil),  // 32: rpcpb.SendOutboundMessageRequest
+		(*SendOutboundMessageResponse)(nil), // 33: rpcpb.SendOutboundMessageResponse
+		(*SaveSnapshotRequest)(nil),         // 34: rpcpb.SaveSnapshotRequest
+		(*SaveSnapshotResponse)(nil),        // 35: rpcpb.SaveSnapshotResponse
+		(*LoadSnapshotRequest)(nil),         // 36: rpcpb.LoadSnapshotRequest
+		(*LoadSnapshotResponse)(nil),        // 37: rpcpb.LoadSnapshotResponse
+		(*RemoveSnapshotRequest)(nil),       // 38: rpcpb.RemoveSnapshotRequest
+		(*RemoveSnapshotResponse)(nil),      // 39: rpcpb.RemoveSnapshotResponse
+		(*GetSnapshotNamesRequest)(nil),     // 40: rpcpb.GetSnapshotNamesRequest
+		(*GetSnapshotNamesResponse)(nil),    // 41: rpcpb.GetSnapshotNamesResponse
+		nil,                                 // 42: rpcpb.ClusterInfo.NodeInfosEntry
+		nil,                                 // 43: rpcpb.ClusterInfo.AttachedPeerInfosEntry
+		nil,                                 // 44: rpcpb.ClusterInfo.CustomChainsEntry
+		nil,                                 // 45: rpcpb.StartRequest.CustomNodeConfigsEntry
+		nil,                                 // 46: rpcpb.StartRequest.ChainConfigsEntry
+		nil,                                 // 47: rpcpb.StartRequest.UpgradeConfigsEntry
+		nil,                                 // 48: rpcpb.RestartNodeRequest.ChainConfigsEntry
+		nil,                                 // 49: rpcpb.RestartNodeRequest.UpgradeConfigsEntry
+		nil,                                 // 50: rpcpb.AddNodeRequest.ChainConfigsEntry
+		nil,                                 // 51: rpcpb.AddNodeRequest.UpgradeConfigsEntry
+		nil,                                 // 52: rpcpb.LoadSnapshotRequest.ChainConfigsEntry
+		nil,                                 // 53: rpcpb.LoadSnapshotRequest.UpgradeConfigsEntry
+	}
+)
 var file_rpcpb_rpc_proto_depIdxs = []int32{
 	42, // 0: rpcpb.ClusterInfo.node_infos:type_name -> rpcpb.ClusterInfo.NodeInfosEntry
 	43, // 1: rpcpb.ClusterInfo.attached_peer_infos:type_name -> rpcpb.ClusterInfo.AttachedPeerInfosEntry

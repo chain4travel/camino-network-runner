@@ -1,4 +1,4 @@
-# Avalanche Network Runner
+# Camino Network Runner
 
 ## Note
 
@@ -6,7 +6,7 @@ This tool is under heavy development and the documentation/code snippets below m
 
 ## Overview
 
-This is a tool to run and interact with a local Avalanche network.
+This is a tool to run and interact with a local Camino network.
 This tool may be especially useful for development and testing.
 
 ## Installation
@@ -47,16 +47,16 @@ curl -sSfL https://raw.githubusercontent.com/ava-labs/avalanche-network-runner/m
 Requires golang to be installed on the system ([https://go.dev/doc/install](https://go.dev/doc/install)).
 
 ```sh
-go install github.com/ava-labs/avalanche-network-runner@latest
+go install github.com/chain4travel/camino-network-runner@latest
 ```
 
-After that, the `avalanche-network-runner` binary should be present under the `$HOME/go/bin/` directory. Consider adding this directory to the `PATH` environment variable.
+After that, the `camino-network-runner` binary should be present under the `$HOME/go/bin/` directory. Consider adding this directory to the `PATH` environment variable.
 
 ### Install by release download
 
 Does not require golang to be installed on the system.
 
-Download the desired distribution from [https://github.com/ava-labs/avalanche-network-runner/releases](https://github.com/ava-labs/avalanche-network-runner/releases).
+Download the desired distribution from [https://github.com/chain4travel/camino-network-runner/releases](https://github.com/chain4travel/camino-network-runner/releases).
 
 Uncompress and locate where is convenient. Consider adding the target bin directory to the `PATH` environment variable.
 
@@ -65,7 +65,7 @@ Uncompress and locate where is convenient. Consider adding the target bin direct
 #### Download
 
 ```sh
-git clone https://github.com/ava-labs/avalanche-network-runner.git
+git clone https://github.com/chain4travel/camino-network-runner.git
 ```
 
 #### Install
@@ -76,7 +76,7 @@ From inside the cloned directory:
 go install
 ```
 
-After that, `avalanche-network-runner` binary should be present under `$HOME/go/bin/` directory. Consider adding this directory to the `PATH` environment variable.
+After that, `camino-network-runner` binary should be present under `$HOME/go/bin/` directory. Consider adding this directory to the `PATH` environment variable.
 
 #### Run Unit Tests
 
@@ -88,13 +88,13 @@ go test ./...
 
 #### Run E2E tests
 
-The E2E test checks `avalanche-network-runner` RPC communication and control. It starts a network against a fresh RPC
+The E2E test checks `camino-network-runner` RPC communication and control. It starts a network against a fresh RPC
 server and executes a set of query and control operations on it.
 
 To start it, execute inside the cloned directory:
 
 ```sh
-./scripts/tests.e2e.sh AVALANCHEGO_VERSION1 AVALANCHEGO_VERSION2
+./scripts/tests.e2e.sh CAMINO_NODE_VERSION1 CAMINO_NODE_VERSION2
 ```
 
 The E2E test checks whether a node can be restarted with a different binary version. Provide two
@@ -111,11 +111,11 @@ To specify that the E2E test should be run with `go test`, set environment varia
 This environment variable is correctly set when executing `./scripts/tests.e2e.sh`, but the user should consider
 setting it if trying to execute E2E tests without using that script.
 
-## Using `avalanche-network-runner`
+## Using `camino-network-runner`
 
-You can import this repository as a library in your Go program, but we recommend running `avalanche-network-runner` as a binary. This creates an RPC server that you can send requests to in order to start a network, add nodes to the network, remove nodes from the network, restart nodes, etc.. You can make requests through the `avalanche-network-runner` command or by making API calls. Requests are "translated" into gRPC and sent to the server.
+You can import this repository as a library in your Go program, but we recommend running `camino-network-runner` as a binary. This creates an RPC server that you can send requests to in order to start a network, add nodes to the network, remove nodes from the network, restart nodes, etc.. You can make requests through the `avalanche-network-runner` command or by making API calls. Requests are "translated" into gRPC and sent to the server.
 
-**Why does `avalanche-network-runner` need an RPC server?** `avalanche-network-runner` needs to provide complex workflows such as replacing nodes, restarting nodes, injecting fail points, etc.. The RPC server exposes basic operations to enable a separation of concerns such that one team develops a test framework, and the other writes test cases and controlling logic.
+**Why does `camino-network-runner` need an RPC server?** `camino-network-runner` needs to provide complex workflows such as replacing nodes, restarting nodes, injecting fail points, etc.. The RPC server exposes basic operations to enable a separation of concerns such that one team develops a test framework, and the other writes test cases and controlling logic.
 
 **Why gRPC?** The RPC server leads to more modular test components, and gRPC enables greater flexibility. The protocol buffer increases flexibility as we develop more complicated test cases. And gRPC opens up a variety of different approaches for how to write test controller (e.g., Rust). See [`rpcpb/rpc.proto`](./rpcpb/rpc.proto) for service definition.
 
@@ -126,7 +126,7 @@ You can import this repository as a library in your Go program, but we recommend
 To start the server:
 
 ```bash
-avalanche-network-runner server \
+camino-network-runner server \
 --log-level debug \
 --port=":8080" \
 --grpc-gateway-port=":8081"
@@ -142,26 +142,26 @@ To ping the server:
 curl -X POST -k http://localhost:8081/v1/ping -d ''
 
 # or
-avalanche-network-runner ping \
+camino-network-runner ping \
 --log-level debug \
 --endpoint="0.0.0.0:8080"
 ```
 
-To start a new Avalanche network with five nodes (a cluster):
+To start a new Camino network with five nodes (a cluster):
 
 ```bash
-# replace execPath with the path to AvalancheGo on your machine
-# e.g., ${HOME}/go/src/github.com/ava-labs/avalanchego/build/avalanchego
-AVALANCHEGO_EXEC_PATH="avalanchego"
+# replace execPath with the path to CaminoNode on your machine
+# e.g., ${HOME}/go/src/github.com/chain4travel/camino-node/build/camino-node
+CAMINO_NODE_EXEC_PATH="camino-node"
 
-curl -X POST -k http://localhost:8081/v1/control/start -d '{"execPath":"'${AVALANCHEGO_EXEC_PATH}'","numNodes":5,"logLevel":"INFO"}'
+curl -X POST -k http://localhost:8081/v1/control/start -d '{"execPath":"'${CAMINO_NODE_EXEC_PATH}'","numNodes":5,"logLevel":"INFO"}'
 
 # or
 avalanche-network-runner control start \
 --log-level debug \
 --endpoint="0.0.0.0:8080" \
 --number-of-nodes=5 \
---avalanchego-path ${AVALANCHEGO_EXEC_PATH}
+--avalanchego-path ${CAMINO_NODE_EXEC_PATH}
 ```
 
 Additional optional parameters which can be passed to the start command:
@@ -178,11 +178,11 @@ For example, to set `avalanchego --http-host` flag for all nodes:
 ```bash
 # to expose local RPC server to all traffic
 # (e.g., run network runner within cloud instance)
-curl -X POST -k http://localhost:8081/v1/control/start -d '{"execPath":"'${AVALANCHEGO_EXEC_PATH}'","globalNodeConfig":"{\"http-host\":\"0.0.0.0\"}"}'
+curl -X POST -k http://localhost:8081/v1/control/start -d '{"execPath":"'${CAMINO_NODE_EXEC_PATH}'","globalNodeConfig":"{\"http-host\":\"0.0.0.0\"}"}'
 
 # or
 avalanche-network-runner control start \
---avalanchego-path ${AVALANCHEGO_EXEC_PATH} \
+--avalanchego-path ${CAMINO_NODE_EXEC_PATH} \
 --global-node-config '{"http-host":"0.0.0.0"}'
 ```
 
@@ -214,7 +214,7 @@ Example usage of `--custom-node-configs` to get deterministic API port numbers:
 
 ```bash
 curl -X POST -k http://localhost:8081/v1/control/start -d\
-'{"execPath":"'${AVALANCHEGO_EXEC_PATH}'","customNodeConfigs":
+'{"execPath":"'${CAMINO_NODE_EXEC_PATH}'","customNodeConfigs":
 {
 "node1":"{\"http-port\":9650}",
 "node2":"{\"http-port\":9652}",
@@ -226,7 +226,7 @@ curl -X POST -k http://localhost:8081/v1/control/start -d\
 
 # or
 avalanche-network-runner control start \
---avalanchego-path ${AVALANCHEGO_EXEC_PATH} \
+--avalanchego-path ${CAMINO_NODE_EXEC_PATH} \
 --custom-node-configs \
 '{
 "node1":"{\"http-port\":9650}",
@@ -308,7 +308,7 @@ optional. If not specified, will use the paths saved with the snapshot:
 curl -X POST -k http://localhost:8081/v1/control/loadsnapshot -d '{"snapshot_name":"node5","execPath":"'${AVALANCHEGO_EXEC_PATH}'","pluginDir":"'${AVALANCHEGO_PLUGIN_PATH}'"}'
 
 # or
-avalanche-network-runner control load-snapshot snapshotName --avalanchego-path ${AVALANCHEGO_EXEC_PATH} --plugin-dir ${AVALANCHEGO_PLUGIN_PATH}
+avalanche-network-runner control load-snapshot snapshotName --avalanchego-path ${CAMINO_NODE_EXEC_PATH} --plugin-dir ${AVALANCHEGO_PLUGIN_PATH}
 ```
 
 To get the list of snapshots:

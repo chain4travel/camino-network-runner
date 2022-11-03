@@ -499,7 +499,7 @@ func TestGeneratedNodesNames(t *testing.T) {
 }
 
 // TestGenerateDefaultNetwork create a default network with config from NewDefaultConfig and
-// check expected number of nodes, node names, and avalanchego node ids
+// check expected number of nodes, node names, and camino node ids
 func TestGenerateDefaultNetwork(t *testing.T) {
 	t.Parallel()
 	assert := assert.New(t)
@@ -519,23 +519,23 @@ func TestGenerateDefaultNetwork(t *testing.T) {
 	}{
 		{
 			"node1",
-			"NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg",
+			"NodeID-AK7sPBsZM9rQwse23aLhEEBPHZD5gkLrL",
 		},
 		{
 			"node2",
-			"NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ",
+			"NodeID-D1LbWvUf9iaeEyUbTYYtYq4b7GaYR5tnJ",
 		},
 		{
 			"node3",
-			"NodeID-NFBbbJ4qCmNaCzeW7sxErhvWqvEQMnYcN",
+			"NodeID-PM2LqrGsxudhZSP49upMonevbQvnvAciv",
 		},
 		{
 			"node4",
-			"NodeID-GWPcbFJZFfZreETSoWjPimr846mXEKCtu",
+			"NodeID-5ZUdznHckQcqucAnNf3vzXnPF97tfRtfn",
 		},
 		{
 			"node5",
-			"NodeID-P7oB2McjBGgW2NXXWVYjV8JEDFoW9xDE5",
+			"NodeID-EoYFkbokZEukfWrUovo74YkTFnAMaqTG7",
 		},
 	} {
 		assert.Contains(names, nodeInfo.name)
@@ -1129,7 +1129,7 @@ func TestWriteFiles(t *testing.T) {
 	chainConfigFiles := map[string]string{
 		"C": "c-chain config file",
 	}
-	tmpDir, err := os.MkdirTemp("", "avalanche-network-runner-tests-*")
+	tmpDir, err := os.MkdirTemp("", "camino-network-runner-tests-*")
 	if err != nil {
 		t.Fatal(err)
 	}

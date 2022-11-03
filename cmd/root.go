@@ -16,8 +16,8 @@ import (
 var Version = ""
 
 var rootCmd = &cobra.Command{
-	Use:        "avalanche-network-runner",
-	Short:      "avalanche-network-runner commands",
+	Use:        "camino-network-runner",
+	Short:      "camino-network-runner commands",
 	SuggestFor: []string{"network-runner"},
 	Version:    Version,
 }
@@ -36,7 +36,7 @@ func init() {
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "avalanche-network-runner failed %v\n", err)
+		fmt.Fprintf(os.Stderr, "camino-network-runner failed %v\n", err)
 		os.Exit(1)
 	}
 	os.Exit(0)

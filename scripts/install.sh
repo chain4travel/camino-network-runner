@@ -1,10 +1,10 @@
 #!/bin/sh
 set -e
 
-PROJECT_NAME=avalanche-network-runner
+PROJECT_NAME=camino-network-runner
 OWNER=ava-labs
-REPO="avalanche-network-runner"
-BINARY=avalanche-network-runner
+REPO="camino-network-runner"
+BINARY=camino-network-runner
 FORMAT=tar.gz
 PREFIX="$OWNER/$REPO"
 DEFAULT_INSTALL=~/bin

@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/ava-labs/avalanchego/network/peer"
+
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/staking"
 )
@@ -22,7 +24,11 @@ func ToNodeID(stakingKey, stakingCert []byte) (ids.NodeID, error) {
 	if err != nil {
 		return ids.EmptyNodeID, err
 	}
-	nodeID := ids.NodeIDFromCert(cert.Leaf)
+	// Get the nodeID from certificate (secp256k1 public key)
+	nodeID, err := peer.CertToID(cert.Leaf)
+	if err != nil {
+		return ids.NodeID{}, fmt.Errorf("cannot extract nodeID from certificate: %w", err)
+	}
 	return nodeID, nil
 }
 
@@ -44,8 +50,8 @@ func NetworkIDFromGenesis(genesis []byte) (uint32, error) {
 }
 
 var (
-	ErrInvalidExecPath        = errors.New("avalanche exec is invalid")
-	ErrNotExists              = errors.New("avalanche exec not exists")
+	ErrInvalidExecPath        = errors.New("camino-node exec is invalid")
+	ErrNotExists              = errors.New("camino-node exec not exists")
 	ErrNotExistsPlugin        = errors.New("plugin exec not exists")
 	ErrNotExistsPluginGenesis = errors.New("plugin genesis not exists")
 )

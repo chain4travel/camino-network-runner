@@ -14,12 +14,12 @@ import (
 	"github.com/ava-labs/avalanchego/snow/networking/router"
 )
 
-// Node represents an AvalancheGo node
+// Node represents an Camino node
 type Node interface {
 	// Return this node's name, which is unique
 	// across all the nodes in its network.
 	GetName() string
-	// Return this node's Avalanche node ID.
+	// Return this node's Camino node ID.
 	GetNodeID() ids.NodeID
 	// Return a client that can be used to make API calls.
 	GetAPIClient() api.Client
@@ -39,7 +39,7 @@ type Node interface {
 	SendOutboundMessage(ctx context.Context, peerID string, content []byte, op uint32) (bool, error)
 	// Return the state of the node process
 	Status() status.Status
-	// Return this node's avalanchego binary path
+	// Return this node's Camino Node binary path
 	GetBinaryPath() string
 	// Return this node's db dir
 	GetDbDir() string
@@ -55,7 +55,7 @@ type Node interface {
 	GetFlag(string) (string, error)
 }
 
-// Config encapsulates an avalanchego configuration
+// Config encapsulates an camino node configuration
 type Config struct {
 	// A node's name must be unique from all other nodes
 	// in a network. If Name is the empty string, a

@@ -19,7 +19,7 @@ import (
 var _ NodeProcess = (*nodeProcess)(nil)
 
 // NodeProcess as an interface so we can mock running
-// AvalancheGo binaries in tests
+// CaminoGo binaries in tests
 type NodeProcess interface {
 	// Sends a SIGINT to this process and returns the process's
 	// exit code.
@@ -53,7 +53,7 @@ type nodeProcessCreator struct {
 // If the config has redirection set to `true` for either StdErr or StdOut,
 // the output will be redirected and colored
 func (npc *nodeProcessCreator) NewNodeProcess(config node.Config, args ...string) (NodeProcess, error) {
-	// Start the AvalancheGo node and pass it the flags defined above
+	// Start the camino node and pass it the flags defined above
 	cmd := exec.Command(config.BinaryPath, args...)
 	// assign a new color to this process (might not be used if the config isn't set for it)
 	color := npc.colorPicker.NextColor()

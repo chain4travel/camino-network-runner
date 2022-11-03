@@ -169,7 +169,7 @@ message CustomChainInfo {
   string vm_id = 2;
 
   // Create subnet transaction ID -- subnet ID.
-  // The subnet ID must be whitelisted by the avalanche node.
+  // The subnet ID must be whitelisted by the camino node.
   string subnet_id = 3;
 
   // Create blockchain transaction ID -- blockchain ID>
