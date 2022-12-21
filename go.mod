@@ -6,7 +6,7 @@ require (
 	github.com/ava-labs/avalanchego v1.9.1
 	github.com/ava-labs/coreth v0.11.1-rc.7
 	github.com/ethereum/go-ethereum v1.10.25
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
 	github.com/onsi/ginkgo/v2 v2.4.0
 	github.com/onsi/gomega v1.23.0
 	github.com/otiai10/copy v1.7.0
@@ -16,8 +16,8 @@ require (
 	github.com/stretchr/testify v1.8.1
 	go.uber.org/zap v1.23.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
-	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a
-	google.golang.org/grpc v1.51.0-dev
+	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
+	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -130,10 +130,10 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5 // indirect
-	golang.org/x/net v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/term v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/term v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gonum.org/v1/gonum v0.11.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
