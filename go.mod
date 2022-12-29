@@ -14,7 +14,7 @@ require (
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	go.uber.org/zap v1.23.0
+	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a
 	google.golang.org/grpc v1.51.0-dev
