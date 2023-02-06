@@ -869,7 +869,7 @@ Later on the genesis contents can be used in network creation.
 
 ## Network Creation
 
-Th function `NewNetwork` returns a new network, parameterized on `network.Config`:
+The function `NewNetwork` returns a new network, parameterized on `network.Config`:
 
 ```go
 type Config struct {
@@ -899,6 +899,8 @@ The function that returns a new network may have additional configuration fields
 ## Default Network Creation
 
 The helper function `NewDefaultNetwork` returns a network using a pre-defined configuration. This allows users to create a new network without needing to define any configurations.
+
+If set, the environment variable ${NETWORK_ID} can be used to create a camino network based on a different genesis. Currently, the Kopernikus genesis is supported (by providing the appropriate NETOWORK_ID=1002).
 
 ```go
 // NewDefaultNetwork returns a new network using a pre-defined
