@@ -21,9 +21,11 @@ import (
 	"github.com/ava-labs/avalanche-network-runner/network/node/status"
 	"github.com/ava-labs/avalanche-network-runner/utils"
 	"github.com/ava-labs/avalanchego/config"
+	"github.com/ava-labs/avalanchego/genesis"
 	"github.com/ava-labs/avalanchego/network/peer"
 	"github.com/ava-labs/avalanchego/staking"
 	"github.com/ava-labs/avalanchego/utils/beacon"
+	"github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/ips"
 	"github.com/ava-labs/avalanchego/utils/logging"
@@ -131,32 +133,45 @@ func init() {
 	}
 
 	startTime := time.Now().Unix()
-	lockTime := startTime + genesisLocktimeStartimeDelta
 	genesisMap["startTime"] = float64(startTime)
-	allocations, ok := genesisMap["allocations"].([]interface{})
-	if !ok {
-		panic(errors.New("could not get allocations in genesis"))
-	}
-	for _, allocIntf := range allocations {
-		alloc, ok := allocIntf.(map[string]interface{})
+	if _, ok := os.LookupEnv("CAMINO_NETWORK"); ok {
+		camino, ok := genesisMap["camino"].(map[string]interface{})
 		if !ok {
-			panic(fmt.Errorf("unexpected type for allocation in genesis. got %T", allocIntf))
+			panic(errors.New("could not get camino"))
 		}
-		unlockSchedule, ok := alloc["unlockSchedule"].([]interface{})
+		genesisMap["networkID"] = constants.KopernikusID
+		genesisMap["initialStakeDuration"] = float64(0)
+		genesisMap["initialStakedFunds"] = []string{}
+		genesisMap["initialStakers"] = []genesis.UnparsedStaker{}
+		genesisMap["allocations"] = []genesis.UnparsedAllocation{}
+		camino["verifyNodeSignature"] = true
+		camino["lockModeBondDeposit"] = true
+	} else {
+		lockTime := startTime + genesisLocktimeStartimeDelta
+		allocations, ok := genesisMap["allocations"].([]interface{})
 		if !ok {
-			panic(errors.New("could not get unlockSchedule in allocation"))
+			panic(errors.New("could not get allocations in genesis"))
 		}
-		for _, schedIntf := range unlockSchedule {
-			sched, ok := schedIntf.(map[string]interface{})
+		for _, allocIntf := range allocations {
+			alloc, ok := allocIntf.(map[string]interface{})
 			if !ok {
-				panic(fmt.Errorf("unexpected type for unlockSchedule elem in genesis. got %T", schedIntf))
+				panic(fmt.Errorf("unexpected type for allocation in genesis. got %T", allocIntf))
 			}
-			if _, ok := sched["locktime"]; ok {
-				sched["locktime"] = float64(lockTime)
+			unlockSchedule, ok := alloc["unlockSchedule"].([]interface{})
+			if !ok {
+				panic(errors.New("could not get unlockSchedule in allocation"))
+			}
+			for _, schedIntf := range unlockSchedule {
+				sched, ok := schedIntf.(map[string]interface{})
+				if !ok {
+					panic(fmt.Errorf("unexpected type for unlockSchedule elem in genesis. got %T", schedIntf))
+				}
+				if _, ok := sched["locktime"]; ok {
+					sched["locktime"] = float64(lockTime)
+				}
 			}
 		}
 	}
-
 	// now we can marshal the *whole* thing into bytes
 	updatedGenesis, err := json.Marshal(genesisMap)
 	if err != nil {

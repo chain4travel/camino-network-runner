@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"os"
 
 	coreth_params "github.com/ava-labs/coreth/params"
 )
@@ -26,6 +28,10 @@ func LoadLocalGenesis() (map[string]interface{}, error) {
 	// set the cchain genesis directly from coreth
 	// the whole of `cChainGenesis` should be set as a string, not a json object...
 	corethCChainGenesis := coreth_params.AvalancheLocalChainConfig
+	if _, ok := os.LookupEnv("CAMINO_NETWORK"); ok {
+		corethCChainGenesis.SunrisePhase0BlockTimestamp = big.NewInt(0)
+	}
+
 	// but the part in coreth is only the "config" part.
 	// In order to set it easily, first we get the cChainGenesis item
 	// convert it to a map
