@@ -10,6 +10,9 @@ import (
 	coreth_params "github.com/ava-labs/coreth/params"
 )
 
+// PrivateKey-12bQFG6mSUVLsq2H1EAxGbu8p6mYi7zEA7QvQzJezL12JS8j5 -> X-kopernikus1zy075lddftstzpwzvt627mvc0tep0vyk7y9v4l
+// PrivateKey-BhnbhFKyDjhW8r3v9ZY6wPWkrAphTVPzniLjLrviZV8ndHMBe -> X-kopernikus1lx58kettrnt2kyr38adyrrmxt5x57u4vg4cfky
+// PrivateKey-Ge71NJhUY3TjZ9dLohijSnNq46QxobjqxHGMUDAPoVsNFA93w -> X-kopernikus13kyf72ftu4l77kss7xm0kshm0au29s48zjaygq
 //go:embed default/genesis.json
 var genesisBytes []byte
 

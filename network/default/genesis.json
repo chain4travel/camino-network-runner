@@ -75,6 +75,36 @@
     "verifyNodeSignature": false,
     "lockModeBondDeposit": false,
     "initialAdmin": "X-kopernikus1g65uqn6t77p656w64023nh8nd9updzmxh8ttv3",
+    "depositOffers": [
+      {
+        "interestRateNominator": 110000,
+        "startOffset": 0,
+        "endOffset": 63075600,
+        "minAmount": 1,
+        "minDuration": 60,
+        "maxDuration": 31536000,
+        "unlockPeriodDuration": 0,
+        "noRewardsPeriodDuration": 0,
+        "memo": "depositOffer test#1 - pickable after network creation and not in genesis as duration is not choosable per allocation!",
+        "flags": {
+          "locked": false
+        }
+      },
+      {
+        "interestRateNominator": 210000,
+        "startOffset": 0,
+        "endOffset": 63075600,
+        "minAmount": 1,
+        "minDuration": 86400,
+        "maxDuration": 31536000,
+        "unlockPeriodDuration": 43200,
+        "noRewardsPeriodDuration": 43200,
+        "memo": "depositOffer test#2 - pickable after network creation and not in genesis as duration is not choosable per allocation!",
+        "flags": {
+          "locked": false
+        }
+      }
+    ],
     "allocations": [
       {
         "ethAddr": "0x0000000000000000000000000000000000000000",
@@ -118,7 +148,7 @@
       },
       {
         "ethAddr": "0x0000000000000000000000000000000000000000",
-        "avaxAddr": "X-kopernikus1ur873jhz9qnaqv5qthk5sn3e8nj3e0kmmtddn8",
+        "avaxAddr": "X-kopernikus13kyf72ftu4l77kss7xm0kshm0au29s48zjaygq",
         "addressStates": {
           "consortiumMember": true,
           "kycVerified": true
@@ -134,7 +164,7 @@
       },
       {
         "ethAddr": "0x0000000000000000000000000000000000000000",
-        "avaxAddr": "X-kopernikus1eypkz2qsjj3zuy9ny38wp5cpz44ks95xyznj6e",
+        "avaxAddr": "X-kopernikus1zy075lddftstzpwzvt627mvc0tep0vyk7y9v4l",
         "addressStates": {
           "consortiumMember": true,
           "kycVerified": true
@@ -150,7 +180,7 @@
       },
       {
         "ethAddr": "0x0000000000000000000000000000000000000000",
-        "avaxAddr": "X-kopernikus1rz8ecaxf44xxuw4j78l574lk5k0tmraetavksq",
+        "avaxAddr": "X-kopernikus1lx58kettrnt2kyr38adyrrmxt5x57u4vg4cfky",
         "addressStates": {
           "consortiumMember": true,
           "kycVerified": true
