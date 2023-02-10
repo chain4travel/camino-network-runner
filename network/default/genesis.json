@@ -217,6 +217,7 @@
       "apricotPhase4BlockTimestamp": 0,
       "apricotPhase5BlockTimestamp": 0
     },
+    "initialAdmin": "0x1f0e5c64afdf53175f78846f7125776e76fa8f34",
     "nonce": "0x0",
     "timestamp": "0x0",
     "extraData": "0x00",
