@@ -193,8 +193,9 @@ func postProcessConfig(config *network.Config) {
 	if !ok {
 		panic(errors.New("could not get depositOffers in genesis"))
 	}
+	// locked offer
 	depositOffers = append(depositOffers, map[string]interface{}{
-		"memo":                    "presale3y",
+		"memo":                    "lockedpresale3y",
 		"interestRateNominator":   80000,
 		"startOffset":             0,
 		"endOffset":               112795200,
@@ -204,6 +205,19 @@ func postProcessConfig(config *network.Config) {
 		"unlockPeriodDuration":    31536000,
 		"noRewardsPeriodDuration": 15768000,
 		"flags":                   map[string]interface{}{"locked": true},
+	})
+	// presale1min offer
+	depositOffers = append(depositOffers, map[string]interface{}{
+		"memo":                    "presale1min",
+		"interestRateNominator":   80000,
+		"startOffset":             0,
+		"endOffset":               112795200,
+		"minAmount":               100,
+		"minDuration":             60,
+		"maxDuration":             60,
+		"unlockPeriodDuration":    20,
+		"noRewardsPeriodDuration": 10,
+		"flags":                   map[string]interface{}{"locked": false},
 	})
 	camino["depositOffers"] = depositOffers
 
