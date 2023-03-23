@@ -26,12 +26,15 @@ const (
 )
 
 // node6: PrivateKey-UfV3iPVP8ThZuSXmUacsahdzePs5VkXct4XoQKsW9mffN1d8J -> X-kopernikus1nnptptd6l2a4ty69jgv9ng70va72lyx2xq7ddx
+// node7: PrivateKey-2DXzE36hZ3MSKxk1Un5mBHGwcV69CqkKvbVvSwFBhDRtnbFCDX -> X-kopernikus1v3ujye6nv5ufd23s6a3cl9323n7mkt3hmw46gz
 // Admin: PrivateKey-vmRQiZeXEXYMyJhEiqdC2z5JhuDbxL8ix9UVvjgMu2Er1NepE => X-kopernikus1g65uqn6t77p656w64023nh8nd9updzmxh8ttv3
 // Admin C-chain: 0x1f0e5c64afdf53175f78846f7125776e76fa8f34
 // KYC: PrivateKey-ewoqjP7PxY4yr3iLTpLisriqt94hdyDFNgchSxGGztUrTXtNN => X-kopernikus18jma8ppw3nhx5r4ap8clazz0dps7rv5uuvjh68
 // KYC C-chain: 0x8db97c7cece249c2b98bdc0226cc4c2a57bf52fc
 // Gas Fee: PrivateKey-Ge71NJhUY3TjZ9dLohijSnNq46QxobjqxHGMUDAPoVsNFA93w -> X-kopernikus13kyf72ftu4l77kss7xm0kshm0au29s48zjaygq
 // Gas Fee C-chain: 0x305cea207112c0561033133f816d7a2233699f06
+// MultiSig Owner 1: PrivateKey-2Vtf2ZhTRz6WcVcSH7cS7ghKneZxZ2L5W8assdCcaNDVdpoYfY -> X-kopernikus1jla8ty5c9ud6lsj8s4re2dvzvfxpzrxdcrd8q7
+// MultiSig Owner 2: PrivateKey-XQFgPzByKfqFfpVTafmZHBqfaw4hsDTGbbcArUg4unMiEKvrD -> X-kopernikus15hscuhlg5tkv4wwrujqgarne3tau83wrpp2d0d
 var (
 	//go:embed node6
 	//go:embed node7
