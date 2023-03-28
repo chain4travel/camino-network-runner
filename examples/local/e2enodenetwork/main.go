@@ -209,7 +209,7 @@ func postProcessConfig(config *network.Config) {
 	// presale1min offer
 	depositOffers = append(depositOffers, map[string]interface{}{
 		"memo":                    "presale1min",
-		"interestRateNominator":   80000,
+		"interestRateNominator":   0.1 * 1_000_000 * (365 * 24 * 60 * 60),
 		"startOffset":             0,
 		"endOffset":               112795200,
 		"minAmount":               100,
