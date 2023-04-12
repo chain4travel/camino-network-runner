@@ -370,6 +370,8 @@ func postProcessConfig(config *network.Config) {
 	camino["allocations"] = allocations
 
 	cChainGenesis["initialAdmin"] = "0x1f0e5c64afdf53175f78846f7125776e76fa8f34"
+	cChainGenesis["feeRewardExportMinAmount"] = "0x2710"     // 10000
+	cChainGenesis["feeRewardExportMinTimeInterval"] = "0x3C" // 60sec (must be at least 1min because of the SharedMemorySyncBound)
 
 	alloc["1f0e5c64afdf53175f78846f7125776e76fa8f34"] = map[string]interface{}{ // adminAddress
 		"balance": "0x295BE96E64066972000000",
