@@ -20,7 +20,7 @@ curl -sSfL https://raw.githubusercontent.com/chain4travel/camino-network-runner/
 To install a specific version, just append the desired version to the command (must be an existing github tag like v1.3.1)
 
 ```sh
-curl -sSfL https://raw.githubusercontent.com/ava-labs/avalanche-network-runner/main/scripts/install.sh | sh -s v1.3.1
+curl -sSfL https://raw.githubusercontent.com/chain4travel/camino-network-runner/chain4travel/scripts/install.sh | sh -s v1.3.1
 ```
 
 The binary will be installed inside the `./bin` directory.
@@ -386,7 +386,7 @@ To create a blockchain with a new subnet id with select nodes as participants (r
 curl -X POST -k http://localhost:8081/v1/control/createblockchains -d '{"pluginDir":"'$PLUGIN_DIR'","blockchainSpecs":[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_PATH'", "subnet_spec": "{"participants": ["node1", "node2", "testNode"]}"]}'
 
 # or
-avalanche-network-runner control create-blockchains '[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_PATH'", "subnet_spec": "{"participants": ["node1", "node2", "testNode"]}"]' --plugin-dir $PLUGIN_DIR
+camino-network-runner control create-blockchains '[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_PATH'", "subnet_spec": "{"participants": ["node1", "node2", "testNode"]}"]' --plugin-dir $PLUGIN_DIR
 ```
 
 Chain config can also be defined on a per node basis. For that, a per node chain config file is needed, which is a JSON that specifies the chain config per node. For example, given the following as the contents of the file with path `$PER_NODE_CHAIN_CONFIG`:
@@ -463,14 +463,14 @@ node99
 
 To pause a node (in this case, node named `node99`):
 ```bash
-# e.g., ${HOME}/go/src/github.com/ava-labs/avalanchego/build/avalanchego
-AVALANCHEGO_EXEC_PATH="avalanchego"
+# e.g., ${HOME}/go/src/github.com/chain4travel/camino-node/build/camino-node
+CAMINO_NODE_EXEC_PATH="camino-node"
 
 
 curl -X POST -k http://localhost:8081/v1/control/pausenode -d '{"name":"node99","logLevel":"INFO"}'
 
 # or
-avalanche-network-runner control pause-node \
+camino-network-runner control pause-node \
 --request-timeout=3m \
 --log-level debug \
 --endpoint="0.0.0.0:8080" \
@@ -479,14 +479,14 @@ node99
 
 To resume a paused node (in this case, node named `node99`):
 ```bash
-# e.g., ${HOME}/go/src/github.com/ava-labs/avalanchego/build/avalanchego
-AVALANCHEGO_EXEC_PATH="avalanchego"
+# e.g., ${HOME}/go/src/github.com/chain4travel/camino-node/build/camino-node
+CAMINO_NODE_EXEC_PATH="camino-node"
 
 
 curl -X POST -k http://localhost:8081/v1/control/resumenode -d '{"name":"node99","logLevel":"INFO"}'
 
 # or
-avalanche-network-runner control resume-node \
+camino-network-runner control resume-node \
 --request-timeout=3m \
 --log-level debug \
 --endpoint="0.0.0.0:8080" \
