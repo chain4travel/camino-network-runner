@@ -15,4 +15,4 @@ else
     OUTPUT=$1
 fi
 
-go build -v -ldflags="-X 'github.com/chain4travel/camino-network-runner/cmd.Version=$VERSION'" -o $OUTPUT/camino-network-runner
+go build -v -ldflags="-X 'github.com/ava-labs/avalanche-network-runner/cmd.Version=$VERSION'" -o $OUTPUT/camino-network-runner
