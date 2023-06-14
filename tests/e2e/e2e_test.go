@@ -57,9 +57,9 @@ var (
 	pausedNodeURI     = ""
 	pausedNodeName    = "node1"
 	customNodeConfigs = map[string]string{
-		"node1": `{"api-admin-enabled":true}`,
-		"node2": `{"api-admin-enabled":true}`,
-		"node3": `{"api-admin-enabled":true}`,
+		"node1": `{"api-admin-enabled":true, "http-insecure-localhost": true}`,
+		"node2": `{"api-admin-enabled":true, "http-insecure-localhost": true}`,
+		"node3": `{"api-admin-enabled":true, "http-insecure-localhost": true}`,
 		"node4": `{"api-admin-enabled":false}`,
 		"node5": `{"api-admin-enabled":false}`,
 		"node6": `{"api-admin-enabled":false}`,
