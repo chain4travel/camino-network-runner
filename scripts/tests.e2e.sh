@@ -34,65 +34,65 @@ echo "Running e2e tests with:"
 echo VERSION_1: ${VERSION_1}
 echo VERSION_2: ${VERSION_2}
 
-#if [ ! -f /tmp/camino-node-v${VERSION_1}/camino-node ]
-#then
-#    ############################
-#    # download camino-node
-#    # https://github.com/chain4travel/camino-node/releases
-#    GOARCH=$(go env GOARCH)
-#    GOOS=$(go env GOOS)
-#    DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_1}/camino-node-linux-${GOARCH}-v${VERSION_1}.tar.gz
-#    DOWNLOAD_PATH=/tmp/camino-node.tar.gz
-#    if [[ ${GOOS} == "darwin" ]]; then
-#      DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_1}/camino-node-macos-v${VERSION_1}.zip
-#      DOWNLOAD_PATH=/tmp/camino-node.zip
-#    fi
-#
-#    rm -rf /tmp/camino-node-v${VERSION_1}
-#    rm -rf /tmp/camino-node-build
-#    rm -f ${DOWNLOAD_PATH}
-#
-#    echo "downloading camino-node ${VERSION_1} at ${DOWNLOAD_URL}"
-#    curl -L ${DOWNLOAD_URL} -o ${DOWNLOAD_PATH}
-#
-#    echo "extracting downloaded camino-node"
-#    if [[ ${GOOS} == "linux" ]]; then
-#      tar xzvf ${DOWNLOAD_PATH} -C /tmp
-#    elif [[ ${GOOS} == "darwin" ]]; then
-#      unzip ${DOWNLOAD_PATH} -d /tmp/camino-node-build
-#      mv /tmp/camino-node-build/build /tmp/camino-node-v${VERSION_1}
-#    fi
-#fi
-#
-#if [ ! -f /tmp/camino-node-v${VERSION_2}/camino-node ]
-#then
-#    ############################
-#    # download camino-node
-#    # https://github.com/chain4travel/camino-node/releases
-#    GOARCH=$(go env GOARCH)
-#    GOOS=$(go env GOOS)
-#    DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_2}/camino-node-linux-${GOARCH}-v${VERSION_2}.tar.gz
-#    DOWNLOAD_PATH=/tmp/camino-node.tar.gz
-#    if [[ ${GOOS} == "darwin" ]]; then
-#      DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_2}/camino-node-macos-v${VERSION_2}.zip
-#      DOWNLOAD_PATH=/tmp/camino-node.zip
-#    fi
-#
-#    rm -rf /tmp/camino-node-v${VERSION_2}
-#    rm -rf /tmp/camino-node-build
-#    rm -f ${DOWNLOAD_PATH}
-#
-#    echo "downloading camino-node ${VERSION_2} at ${DOWNLOAD_URL}"
-#    curl -L ${DOWNLOAD_URL} -o ${DOWNLOAD_PATH}
-#
-#    echo "extracting downloaded camino-node"
-#    if [[ ${GOOS} == "linux" ]]; then
-#      tar xzvf ${DOWNLOAD_PATH} -C /tmp
-#    elif [[ ${GOOS} == "darwin" ]]; then
-#      unzip ${DOWNLOAD_PATH} -d /tmp/camino-node-build
-#      mv /tmp/camino-node-build/build /tmp/camino-node-v${VERSION_2}
-#    fi
-#fi
+if [ ! -f /tmp/camino-node-v${VERSION_1}/camino-node ]
+then
+    ############################
+    # download camino-node
+    # https://github.com/chain4travel/camino-node/releases
+    GOARCH=$(go env GOARCH)
+    GOOS=$(go env GOOS)
+    DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_1}/camino-node-linux-${GOARCH}-v${VERSION_1}.tar.gz
+    DOWNLOAD_PATH=/tmp/camino-node.tar.gz
+    if [[ ${GOOS} == "darwin" ]]; then
+      DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_1}/camino-node-macos-v${VERSION_1}.zip
+      DOWNLOAD_PATH=/tmp/camino-node.zip
+    fi
+
+    rm -rf /tmp/camino-node-v${VERSION_1}
+    rm -rf /tmp/camino-node-build
+    rm -f ${DOWNLOAD_PATH}
+
+    echo "downloading camino-node ${VERSION_1} at ${DOWNLOAD_URL}"
+    curl -L ${DOWNLOAD_URL} -o ${DOWNLOAD_PATH}
+
+    echo "extracting downloaded camino-node"
+    if [[ ${GOOS} == "linux" ]]; then
+      tar xzvf ${DOWNLOAD_PATH} -C /tmp
+    elif [[ ${GOOS} == "darwin" ]]; then
+      unzip ${DOWNLOAD_PATH} -d /tmp/camino-node-build
+      mv /tmp/camino-node-build/build /tmp/camino-node-v${VERSION_1}
+    fi
+fi
+
+if [ ! -f /tmp/camino-node-v${VERSION_2}/camino-node ]
+then
+    ############################
+    # download camino-node
+    # https://github.com/chain4travel/camino-node/releases
+    GOARCH=$(go env GOARCH)
+    GOOS=$(go env GOOS)
+    DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_2}/camino-node-linux-${GOARCH}-v${VERSION_2}.tar.gz
+    DOWNLOAD_PATH=/tmp/camino-node.tar.gz
+    if [[ ${GOOS} == "darwin" ]]; then
+      DOWNLOAD_URL=https://github.com/chain4travel/camino-node/releases/download/v${VERSION_2}/camino-node-macos-v${VERSION_2}.zip
+      DOWNLOAD_PATH=/tmp/camino-node.zip
+    fi
+
+    rm -rf /tmp/camino-node-v${VERSION_2}
+    rm -rf /tmp/camino-node-build
+    rm -f ${DOWNLOAD_PATH}
+
+    echo "downloading camino-node ${VERSION_2} at ${DOWNLOAD_URL}"
+    curl -L ${DOWNLOAD_URL} -o ${DOWNLOAD_PATH}
+
+    echo "extracting downloaded camino-node"
+    if [[ ${GOOS} == "linux" ]]; then
+      tar xzvf ${DOWNLOAD_PATH} -C /tmp
+    elif [[ ${GOOS} == "darwin" ]]; then
+      unzip ${DOWNLOAD_PATH} -d /tmp/camino-node-build
+      mv /tmp/camino-node-build/build /tmp/camino-node-v${VERSION_2}
+    fi
+fi
 
 ############################
 echo "building runner"
@@ -132,8 +132,8 @@ echo "running e2e tests"
 --log-level debug \
 --grpc-endpoint="0.0.0.0:8080" \
 --grpc-gateway-endpoint="0.0.0.0:8081" \
---camino-node-path-1=/home/kkyriakis/dev/c4t/camino-node/build/camino-node
-#--camino-node-path-2=/tmp/camino-node-v${VERSION_2}/camino-node
+--camino-node-path-1=/tmp/camino-node-v${VERSION_1}/camino-node \
+--camino-node-path-2=/tmp/camino-node-v${VERSION_2}/camino-node
 
 kill ${PID}
 echo "ALL SUCCESS!"
