@@ -42,6 +42,11 @@ func TestE2e(t *testing.T) {
 	ginkgo.RunSpecs(t, "network-runner-example e2e test suites")
 }
 
+const (
+	apiflags   = `{"api-admin-enabled-secret":"` + constants.APIAdminKey + `"}`
+	noapiflags = `{"api-admin-enabled-secret":""}`
+)
+
 var (
 	logLevel      string
 	logDir        string
@@ -57,13 +62,13 @@ var (
 	pausedNodeURI     = ""
 	pausedNodeName    = "node1"
 	customNodeConfigs = map[string]string{
-		"node1": `{"api-admin-enabled":true, "http-insecure-localhost": true}`,
-		"node2": `{"api-admin-enabled":true, "http-insecure-localhost": true}`,
-		"node3": `{"api-admin-enabled":true, "http-insecure-localhost": true}`,
-		"node4": `{"api-admin-enabled":false}`,
-		"node5": `{"api-admin-enabled":false}`,
-		"node6": `{"api-admin-enabled":false}`,
-		"node7": `{"api-admin-enabled":false}`,
+		"node1": apiflags,
+		"node2": apiflags,
+		"node3": apiflags,
+		"node4": noapiflags,
+		"node5": noapiflags,
+		"node6": noapiflags,
+		"node7": noapiflags,
 	}
 	numNodes            = uint32(5)
 	subnetParticipants  = []string{"node1", "node2", "node3"}
@@ -399,7 +404,7 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			ctx, cancel = context.WithTimeout(context.Background(), 15*time.Second)
 			errCnt := 0
 			for i := 0; i < len(uris); i++ {
-				cli := admin.NewClient(uris[i])
+				cli := admin.NewClient(uris[i], constants.APIAdminKey)
 				err := cli.LockProfile(ctx)
 				if err != nil {
 					errCnt++

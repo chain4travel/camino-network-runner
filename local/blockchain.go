@@ -17,6 +17,7 @@ import (
 	"github.com/ava-labs/avalanche-network-runner/network"
 	"github.com/ava-labs/avalanche-network-runner/network/node"
 	"github.com/ava-labs/avalanche-network-runner/utils"
+	rc "github.com/ava-labs/avalanche-network-runner/utils/constants"
 	"github.com/ava-labs/avalanchego/api/admin"
 	"github.com/ava-labs/avalanchego/config"
 	"github.com/ava-labs/avalanchego/genesis"
@@ -862,7 +863,7 @@ func (ln *localNetwork) reloadVMPlugins(ctx context.Context) error {
 			continue
 		}
 		uri := fmt.Sprintf("http://%s:%d", node.GetURL(), node.GetAPIPort())
-		adminCli := admin.NewClient(uri)
+		adminCli := admin.NewClient(uri, rc.APIAdminKey)
 		cctx, cancel := createDefaultCtx(ctx)
 		_, failedVMs, err := adminCli.LoadVMs(cctx)
 		cancel()

@@ -7,6 +7,13 @@ if ! [[ "$0" =~ scripts/build.sh ]]; then
   exit 1
 fi
 
+# Download dependencies
+if [ ! -f ./dependencies/caminoethvm/.git ]; then
+    echo "Initializing git submodules..."
+    git --git-dir ./.git submodule update --init --recursive
+    echo "done"
+fi
+
 VERSION=`cat VERSION`
 
 if [ $# -eq 0 ] ; then

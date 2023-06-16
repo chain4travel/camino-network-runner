@@ -34,7 +34,7 @@ import (
 
 const (
 	defaultHealthyTimeout = 5 * time.Second
-	nodeVersion           = "camino-node: v0.4.9-rc2, commit: ef63fcb"
+	nodeVersion           = "camino-node: v0.4.10-rc3, commit: fc34368"
 )
 
 var (

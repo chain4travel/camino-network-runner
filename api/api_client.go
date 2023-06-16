@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 
+	"github.com/ava-labs/avalanche-network-runner/utils/constants"
 	"github.com/ava-labs/avalanchego/api/admin"
 	"github.com/ava-labs/avalanchego/api/health"
 	"github.com/ava-labs/avalanchego/api/info"
@@ -52,7 +53,7 @@ func NewAPIClient(ipAddr string, port uint16) Client {
 		health:       health.NewClient(uri),
 		ipcs:         ipcs.NewClient(uri),
 		keystore:     keystore.NewClient(uri),
-		admin:        admin.NewClient(uri),
+		admin:        admin.NewClient(uri, constants.APIAdminKey),
 		pindex:       indexer.NewClient(uri + "/ext/index/P/block"),
 		cindex:       indexer.NewClient(uri + "/ext/index/C/block"),
 	}
