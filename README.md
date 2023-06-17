@@ -156,8 +156,8 @@ Additional optional parameters which can be passed to the start command:
 ```bash
 --plugin-dir ${CAMINO_NODE_PLUGIN_PATH} \
 --blockchain-specs '[{"vm_name": "subnetevm", "genesis": "/tmp/subnet-evm.genesis.json"}]'
---global-node-config '{"index-enabled":false, "api-admin-enabled":true,"network-peer-list-gossip-frequency":"300ms"}'
---custom-node-configs" '{"node1":{"log-level":"debug","api-admin-enabled":false},"node2":{...},...}'
+--global-node-config '{"index-enabled":false, "api-admin-enabled-secret":"runner","network-peer-list-gossip-frequency":"300ms"}'
+--custom-node-configs" '{"node1":{"log-level":"debug"},"node2":{...},...}'
 ```
 
 For example, to set `camino-node --http-host` flag for all nodes:
@@ -186,7 +186,7 @@ The network-runner supports camino-node configuration at different levels.
         "network-max-reconnect-delay":"1s",
         "public-ip":"127.0.0.1",
         "health-check-frequency":"2s",
-        "api-admin-enabled":true,
+        "api-admin-enabled-secret":"runner",
         "api-ipcs-enabled":true,
         "index-enabled":true
         }
@@ -496,7 +496,7 @@ node99
 You can also provide additional flags that specify the node's config:
 
 ```sh
-  --node-config '{"index-enabled":false, "api-admin-enabled":true,"network-peer-list-gossip-frequency":"300ms"}'
+  --node-config '{"index-enabled":false, "api-admin-enabled-secret":"runner","network-peer-list-gossip-frequency":"300ms"}'
 ```
 
 `--node-config` allows to specify specific camino-node config parameters to the new node. See [here](https://docs.camino.network/nodes/camino-node-config-flags/) for the reference of supported flags.
