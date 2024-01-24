@@ -23,7 +23,9 @@ echo "Running e2e tests:"
 TEMP_PATH=/tmp
 
 mkdir $TEMP_PATH/camino-node-1 -p
-cp -r $CAMINO_NODE_PATH $TEMP_PATH/camino-node-1/camino-node
+mkdir $TEMP_PATH/camino-node-2 -p
+cp $CAMINO_NODE_PATH $TEMP_PATH/camino-node-1/camino-node
+cp $CAMINO_NODE_PATH $TEMP_PATH/camino-node-2/camino-node
 
 ############################
 echo "building runner"
@@ -63,9 +65,8 @@ echo "running e2e tests"
 --log-level debug \
 --grpc-endpoint="0.0.0.0:8080" \
 --grpc-gateway-endpoint="0.0.0.0:8081" \
---camino-node-path-1=$TEMP_PATH/camino-node-1/camino-node # \
-# --camino-node-path-2=$TEMP_PATH/camino-node-2/camino-node
-# camino-node-path-2 arg can be used to specify last compatible version to test its compatibility // TODO @evlekht verify it
+--camino-node-path-1=$TEMP_PATH/camino-node-1/camino-node \
+--camino-node-path-2=$TEMP_PATH/camino-node-2/camino-node
 
 kill ${PID}
 echo "ALL SUCCESS!"
