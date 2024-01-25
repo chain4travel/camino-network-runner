@@ -18,9 +18,8 @@ else
     OUTPUT=$1
 fi
 
-echo "CNR PATH $CAMINO_NETWORK_RUNNER_PATH"
-
-go build -C $CAMINO_NETWORK_RUNNER_PATH -v -ldflags="-X 'github.com/ava-labs/avalanche-network-runner/cmd.Version=$VERSION'" -o $OUTPUT/camino-network-runner 
+cd $CAMINO_NETWORK_RUNNER_PATH
+go build -v -ldflags="-X 'github.com/ava-labs/avalanche-network-runner/cmd.Version=$VERSION'" -o $OUTPUT/camino-network-runner 
 
 # Exit build successfully if the binaries are created
 if [[ -f "$CAMINO_NETWORK_RUNNER_PATH/$OUTPUT/camino-network-runner" ]]; then
