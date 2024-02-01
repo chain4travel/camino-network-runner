@@ -1152,7 +1152,7 @@ func (ln *localNetwork) getNodeSemVer(nodeConfig node.Config) (string, error) {
 			nodeConfig.BinaryPath, err,
 		)
 	}
-	re := regexp.MustCompile(`camino-node:\s+v([\d.]+)`)
+	re := regexp.MustCompile(`caminogo:\s+v([\d.]+)`)
 	matches := re.FindStringSubmatch(nodeVersionOutput)
 	if len(matches) != 2 {
 		return "", fmt.Errorf(
