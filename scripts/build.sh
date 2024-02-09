@@ -18,7 +18,7 @@ CAMINO_NETWORK_RUNNER_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )"; cd .. && pw
 VERSION=`cat $CAMINO_NETWORK_RUNNER_PATH/VERSION`
 
 if [ $# -eq 0 ] ; then
-    OUTPUT="bin"
+    OUTPUT="$CAMINO_NETWORK_RUNNER_PATH/bin"
 else
     OUTPUT=$1
 fi
@@ -27,7 +27,7 @@ cd $CAMINO_NETWORK_RUNNER_PATH
 go build -v -ldflags="-X 'github.com/ava-labs/avalanche-network-runner/cmd.Version=$VERSION'" -o $OUTPUT/camino-network-runner 
 
 # Exit build successfully if the binaries are created
-if [[ -f "$CAMINO_NETWORK_RUNNER_PATH/$OUTPUT/camino-network-runner" ]]; then
+if [[ -f "$OUTPUT/camino-network-runner" ]]; then
     echo "Build Successful"
     exit 0
 else
