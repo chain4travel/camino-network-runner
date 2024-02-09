@@ -45,6 +45,59 @@ func generateCchainGenesis() ([]byte, error) {
 	return json.Marshal(cChainGenesisMap)
 }
 
+func generateTchainGenesis() ([]byte, error) {
+	tChainGenesisMap := map[string]interface{}{}
+	tChainGenesisMap["stateBranchFactor"] = 16
+	tChainGenesisMap["minBlockGap"] = 100
+	tChainGenesisMap["minEmptyBlockGap"] = 2500
+	tChainGenesisMap["minUnitPrice"] = []int{
+		100,
+		100,
+		100,
+		100,
+		100,
+	}
+	tChainGenesisMap["unitPriceChangeDenominator"] = []int{
+		48,
+		48,
+		48,
+		48,
+		48,
+	}
+	tChainGenesisMap["windowTargetUnits"] = []int{
+		40000000,
+		450000,
+		450000,
+		450000,
+		450000,
+	}
+	tChainGenesisMap["maxBlockUnits"] = []int{
+		1800000,
+		15000,
+		15000,
+		2500,
+		15000,
+	}
+	tChainGenesisMap["validityWindow"] = 60000
+	tChainGenesisMap["baseUnits"] = 1
+	tChainGenesisMap["baseWarpUnits"] = 1024
+	tChainGenesisMap["warpUnitsPerSigner"] = 128
+	tChainGenesisMap["outgoingWarpComputeUnits"] = 1024
+	tChainGenesisMap["storageKeyReadUnits"] = 5
+	tChainGenesisMap["storageValueReadUnits"] = 2
+	tChainGenesisMap["storageKeyAllocateUnits"] = 20
+	tChainGenesisMap["storageValueAllocateUnits"] = 5
+	tChainGenesisMap["storageKeyWriteUnits"] = 10
+	tChainGenesisMap["storageValueWriteUnits"] = 3
+	tChainGenesisMap["customAllocation"] = []interface{}{
+		map[string]interface{}{
+			"address": "touristic1qrzvk4zlwj9zsacqgtufx7zvapd3quufqpxk5rsdd4633m4wz2fdju6xf8r",
+			"balance": uint64(10000000000000000000)},
+	}
+
+	return json.Marshal(tChainGenesisMap)
+}
+
 func GenerateGenesis(
 	networkID uint32,
 	nodeKeys []*NodeKeys,
@@ -57,6 +110,13 @@ func GenerateGenesis(
 		return nil, err
 	}
 	genesisMap["cChainGenesis"] = string(cChainGenesisBytes)
+
+	// tchain
+	tChainGenesisBytes, err := generateTchainGenesis()
+	if err != nil {
+		return nil, err
+	}
+	genesisMap["tChainGenesis"] = string(tChainGenesisBytes)
 
 	// pchain genesis
 	genesisMap["networkID"] = networkID

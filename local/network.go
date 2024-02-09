@@ -269,39 +269,44 @@ func NewDefaultNetwork(
 	return NewNetwork(log, config, "", "", reassignPortsIfUsed, redirectStdout, redirectStderr)
 }
 
-func loadDefaultNetworkFiles() (map[string]interface{}, []byte, []*utils.NodeKeys, error) {
+func loadDefaultNetworkFiles() (map[string]interface{}, []byte, []byte, []*utils.NodeKeys, error) {
 	configsDir, err := fs.Sub(embeddedDefaultNetworkConfigDir, "default")
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	// network flags
 	flagsBytes, err := fs.ReadFile(configsDir, "flags.json")
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	flags := map[string]interface{}{}
 	if err = json.Unmarshal(flagsBytes, &flags); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	// c-chain config
 	cChainConfig, err := fs.ReadFile(configsDir, "cchain_config.json")
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
+	}
+	// t-chain config
+	tChainConfig, err := fs.ReadFile(configsDir, "tchain_config.json")
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 	nodeKeys := []*utils.NodeKeys{}
 	for i := 0; i < constants.DefaultNumNodes; i++ {
 		nodeDir := fmt.Sprintf("node%d", i+1)
 		stakingKey, err := fs.ReadFile(configsDir, filepath.Join(nodeDir, "staking.key"))
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		stakingCert, err := fs.ReadFile(configsDir, filepath.Join(nodeDir, "staking.crt"))
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		blsKey, err := fs.ReadFile(configsDir, filepath.Join(nodeDir, "signer.key"))
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		nodeKeys = append(nodeKeys, &utils.NodeKeys{
 			StakingKey:  stakingKey,
@@ -309,12 +314,12 @@ func loadDefaultNetworkFiles() (map[string]interface{}, []byte, []*utils.NodeKey
 			BlsKey:      blsKey,
 		})
 	}
-	return flags, cChainConfig, nodeKeys, nil
+	return flags, cChainConfig, tChainConfig, nodeKeys, nil
 }
 
 // NewDefaultConfigNNodes creates a new default network config, with an arbitrary number of nodes
 func NewDefaultConfigNNodes(binaryPath string, numNodes uint32) (network.Config, error) {
-	flags, cChainConfig, nodeKeys, err := loadDefaultNetworkFiles()
+	flags, cChainConfig, tChainConfig, nodeKeys, err := loadDefaultNetworkFiles()
 	if err != nil {
 		return network.Config{}, err
 	}
@@ -360,6 +365,7 @@ func NewDefaultConfigNNodes(binaryPath string, numNodes uint32) (network.Config,
 		BinaryPath:  binaryPath,
 		ChainConfigFiles: map[string]string{
 			"C": string(cChainConfig),
+			"T": string(tChainConfig),
 		},
 		UpgradeConfigFiles: map[string]string{},
 		SubnetConfigFiles:  map[string]string{},
