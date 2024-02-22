@@ -4,12 +4,12 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"os"
 
 	"github.com/ava-labs/avalanche-network-runner/utils/constants"
 
 	coreth_params "github.com/ava-labs/coreth/params"
+	"github.com/ava-labs/coreth/utils"
 )
 
 // PrivateKey-12bQFG6mSUVLsq2H1EAxGbu8p6mYi7zEA7QvQzJezL12JS8j5 -> X-kopernikus1zy075lddftstzpwzvt627mvc0tep0vyk7y9v4l
@@ -35,7 +35,7 @@ func LoadLocalGenesis() (map[string]interface{}, error) {
 	// the whole of `cChainGenesis` should be set as a string, not a json object...
 	corethCChainGenesis := coreth_params.AvalancheLocalChainConfig
 	if _, ok := os.LookupEnv("CAMINO_NETWORK"); ok {
-		corethCChainGenesis.SunrisePhase0BlockTimestamp = big.NewInt(0)
+		corethCChainGenesis.SunrisePhase0BlockTimestamp = utils.NewUint64(0)
 		corethCChainGenesis.ChainID = constants.CaminoLocalChainID
 	}
 
