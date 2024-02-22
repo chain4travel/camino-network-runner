@@ -11,6 +11,7 @@ import (
 	"github.com/ava-labs/avalanche-network-runner/network/node"
 	"github.com/ava-labs/avalanche-network-runner/network/node/status"
 	"github.com/ava-labs/avalanche-network-runner/utils"
+	"github.com/ava-labs/avalanchego/config"
 	"github.com/ava-labs/avalanchego/utils/logging"
 	"github.com/shirou/gopsutil/process"
 	"go.uber.org/zap"
@@ -123,6 +124,8 @@ func (p *nodeProcess) awaitExit() {
 		p.log.Debug("node returned error on wait", zap.String("node", p.name), zap.Error(err))
 	}
 
+	p.log.Debug("node process finished", zap.String("node", p.name))
+
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
@@ -208,9 +211,9 @@ func killDescendants(pid int32, log logging.Logger) {
 }
 
 // GetNodeVersion gets the version of the executable as per --version flag
-func (*nodeProcessCreator) GetNodeVersion(config node.Config) (string, error) {
+func (*nodeProcessCreator) GetNodeVersion(c node.Config) (string, error) {
 	// Start the AvalancheGo node and pass it the --version flag
-	out, err := exec.Command(config.BinaryPath, "--version").Output() //nolint
+	out, err := exec.Command(c.BinaryPath, "--"+config.VersionKey).Output() //nolint
 	if err != nil {
 		return "", err
 	}

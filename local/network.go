@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/ava-labs/avalanche-network-runner/api"
@@ -22,8 +23,9 @@ import (
 	"github.com/ava-labs/avalanche-network-runner/network/node"
 	"github.com/ava-labs/avalanche-network-runner/network/node/status"
 	"github.com/ava-labs/avalanche-network-runner/utils"
+	"github.com/ava-labs/avalanche-network-runner/utils/constants"
 	"github.com/ava-labs/avalanchego/config"
-	"github.com/ava-labs/avalanchego/genesis"
+	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/network/peer"
 	"github.com/ava-labs/avalanchego/staking"
 	"github.com/ava-labs/avalanchego/utils/beacon"
@@ -51,7 +53,7 @@ const (
 	healthCheckFreq           = 3 * time.Second
 	DefaultNumNodes           = 5
 	snapshotPrefix            = "anr-snapshot-"
-	rootDirPrefix             = "network-runner-root-data"
+	networkRootDirPrefix      = "network"
 	defaultDBSubdir           = "db"
 	defaultLogsSubdir         = "logs"
 	// difference between unlock schedule locktime and startime in original genesis
@@ -115,6 +117,8 @@ type localNetwork struct {
 	subnetConfigFiles map[string]string
 	// if true, for ports given in conf that are already taken, assign new random ones
 	reassignPortsIfUsed bool
+	// map from subnet id to elastic subnet tx id
+	subnetID2ElasticSubnetID map[ids.ID]ids.ID
 }
 
 type deprecatedFlagEsp struct {
@@ -309,8 +313,13 @@ func newNetwork(
 ) (*localNetwork, error) {
 	var err error
 	if rootDir == "" {
-		rootDir = filepath.Join(os.TempDir(), rootDirPrefix)
-		rootDir, err = utils.MkDirWithTimestamp(rootDir)
+		anrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(anrRootDir, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+		networkRootDir := filepath.Join(anrRootDir, networkRootDirPrefix)
+		rootDir, err = utils.MkDirWithTimestamp(networkRootDir)
 		if err != nil {
 			return nil, err
 		}
@@ -325,16 +334,17 @@ func newNetwork(
 	}
 	// Create the network
 	net := &localNetwork{
-		nextNodeSuffix:      1,
-		nodes:               map[string]*localNode{},
-		onStopCh:            make(chan struct{}),
-		log:                 log,
-		bootstraps:          beacon.NewSet(),
-		newAPIClientF:       newAPIClientF,
-		nodeProcessCreator:  nodeProcessCreator,
-		rootDir:             rootDir,
-		snapshotsDir:        snapshotsDir,
-		reassignPortsIfUsed: reassignPortsIfUsed,
+		nextNodeSuffix:           1,
+		nodes:                    map[string]*localNode{},
+		onStopCh:                 make(chan struct{}),
+		log:                      log,
+		bootstraps:               beacon.NewSet(),
+		newAPIClientF:            newAPIClientF,
+		nodeProcessCreator:       nodeProcessCreator,
+		rootDir:                  rootDir,
+		snapshotsDir:             snapshotsDir,
+		reassignPortsIfUsed:      reassignPortsIfUsed,
+		subnetID2ElasticSubnetID: map[ids.ID]ids.ID{},
 	}
 	return net, nil
 }
@@ -532,7 +542,7 @@ func (ln *localNetwork) addNode(nodeConfig node.Config) (node.Node, error) {
 			nodeConfig.SubnetConfigFiles[k] = v
 		}
 	}
-	addNetworkFlags(ln.log, ln.flags, nodeConfig.Flags)
+	addNetworkFlags(ln.flags, nodeConfig.Flags)
 
 	// it shouldn't happen that just one is empty, most probably both,
 	// but in any case if just one is empty it's unusable so we just assign a new one.
@@ -694,7 +704,7 @@ func (ln *localNetwork) healthy(ctx context.Context) error {
 					// Since it is, it means the node stopped unexpectedly.
 					return fmt.Errorf("node %q stopped unexpectedly", nodeName)
 				}
-				health, err := node.client.HealthAPI().Health(ctx)
+				health, err := node.client.HealthAPI().Health(ctx, nil)
 				if err == nil && health.Healthy {
 					ln.log.Debug("node became healthy", zap.String("name", nodeName))
 					return nil
@@ -847,6 +857,7 @@ func (ln *localNetwork) pauseNode(ctx context.Context, nodeName string) error {
 	if exitCode := node.process.Stop(ctx); exitCode != 0 {
 		return fmt.Errorf("node %q exited with exit code: %d", nodeName, exitCode)
 	}
+	syscall.Sync()
 	node.paused = true
 	return nil
 }
@@ -967,6 +978,7 @@ func (ln *localNetwork) restartNode(
 		if err := ln.removeNode(ctx, nodeName); err != nil {
 			return err
 		}
+		syscall.Sync()
 	}
 
 	if _, err := ln.addNode(nodeConfig); err != nil {

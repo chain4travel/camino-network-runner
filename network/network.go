@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/ava-labs/avalanche-network-runner/network/node"
 	"github.com/ava-labs/avalanchego/ids"
@@ -14,9 +15,41 @@ var (
 	ErrNodeNotFound = errors.New("node not found in network")
 )
 
+type PermissionlessStakerSpec struct {
+	SubnetID      string
+	AssetID       string
+	NodeName      string
+	StakedAmount  uint64
+	StartTime     time.Time
+	StakeDuration time.Duration
+}
+
+type ElasticSubnetSpec struct {
+	SubnetID                 *string
+	AssetName                string
+	AssetSymbol              string
+	InitialSupply            uint64
+	MaxSupply                uint64
+	MinConsumptionRate       uint64
+	MaxConsumptionRate       uint64
+	MinValidatorStake        uint64
+	MaxValidatorStake        uint64
+	MinStakeDuration         time.Duration
+	MaxStakeDuration         time.Duration
+	MinDelegationFee         uint32
+	MinDelegatorStake        uint64
+	MaxValidatorWeightFactor byte
+	UptimeRequirement        uint32
+}
+
 type SubnetSpec struct {
 	Participants []string
 	SubnetConfig []byte
+}
+
+type RemoveSubnetValidatorSpec struct {
+	NodeNames []string
+	SubnetID  string
 }
 
 type BlockchainSpec struct {
@@ -77,4 +110,14 @@ type Network interface {
 	CreateBlockchains(context.Context, []BlockchainSpec) ([]ids.ID, error)
 	// Create the given numbers of subnets
 	CreateSubnets(context.Context, []SubnetSpec) ([]ids.ID, error)
+	// Transform subnet into elastic subnet
+	TransformSubnet(context.Context, []ElasticSubnetSpec) ([]ids.ID, []ids.ID, error)
+	// Delegate stake into a permissionless validator in an elastic subnet
+	AddPermissionlessDelegators(context.Context, []PermissionlessStakerSpec) error
+	// Add a validator into an elastic subnet
+	AddPermissionlessValidators(context.Context, []PermissionlessStakerSpec) error
+	// Remove a validator from a subnet
+	RemoveSubnetValidators(context.Context, []RemoveSubnetValidatorSpec) error
+	// Get the elastic subnet tx id for the given subnet id
+	GetElasticSubnetID(context.Context, ids.ID) (ids.ID, error)
 }
