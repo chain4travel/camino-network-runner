@@ -9,9 +9,11 @@ import (
 	"time"
 
 	rpcb "github.com/ava-labs/avalanche-network-runner/rpcpb"
+	"github.com/ava-labs/avalanche-network-runner/ux"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/network/peer"
 	"github.com/ava-labs/avalanchego/staking"
+	"github.com/ava-labs/avalanchego/utils/logging"
 )
 
 const (
@@ -50,10 +52,9 @@ func NetworkIDFromGenesis(genesis []byte) (uint32, error) {
 }
 
 var (
-	ErrInvalidExecPath        = errors.New("camino-node exec is invalid")
-	ErrNotExists              = errors.New("camino-node exec not exists")
-	ErrNotExistsPlugin        = errors.New("plugin exec not exists")
-	ErrNotExistsPluginGenesis = errors.New("plugin genesis not exists")
+	ErrInvalidExecPath = errors.New("camino-node exec is invalid")
+	ErrNotExists       = errors.New("camino-node exec not exists")
+	ErrNotExistsPlugin = errors.New("plugin exec not exists")
 )
 
 func CheckExecPath(exec string) error {
@@ -70,19 +71,13 @@ func CheckExecPath(exec string) error {
 	return nil
 }
 
-func CheckPluginPaths(pluginExec string, pluginGenesisPath string) error {
+func CheckPluginPath(pluginExec string) error {
 	var err error
 	if _, err = os.Stat(pluginExec); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return ErrNotExistsPlugin
 		}
 		return fmt.Errorf("failed to stat plugin exec %q (%w)", pluginExec, err)
-	}
-	if _, err = os.Stat(pluginGenesisPath); err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			return ErrNotExistsPluginGenesis
-		}
-		return fmt.Errorf("failed to stat plugin genesis %q (%w)", pluginGenesisPath, err)
 	}
 
 	return nil
@@ -104,12 +99,14 @@ func MkDirWithTimestamp(dirPrefix string) (string, error) {
 }
 
 func VerifySubnetHasCorrectParticipants(
+	log logging.Logger,
 	subnetParticipants []string,
 	cluster *rpcb.ClusterInfo,
 	subnetID string,
 ) bool {
 	if cluster != nil {
-		participatingNodeNames := cluster.SubnetParticipants[subnetID].GetNodeNames()
+		participatingNodeNames := cluster.Subnets[subnetID].GetSubnetParticipants().GetNodeNames()
+
 		var nodeIsInList bool
 		// Check that all subnet validators are equal to the node IDs added as participant in subnet creation
 		for _, node := range subnetParticipants {
@@ -121,10 +118,14 @@ func VerifySubnetHasCorrectParticipants(
 				}
 			}
 			if !nodeIsInList {
+				ux.Print(log, logging.Red.Wrap(fmt.Sprintf("VerifySubnetHasCorrectParticipants: %#v", cluster)))
+				ux.Print(log, logging.Red.Wrap(fmt.Sprintf("VerifySubnetHasCorrectParticipants: node not in list subnet %q node %q %v %v", subnetID, node, subnetParticipants, participatingNodeNames)))
 				return false
 			}
 		}
 		return true
+	} else {
+		ux.Print(log, logging.Red.Wrap("VerifySubnetHasCorrectParticipants: cluster is nil"))
 	}
 	return false
 }

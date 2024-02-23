@@ -25,6 +25,37 @@ TEMP_PATH=/tmp
 mkdir $TEMP_PATH/camino-node-1 -p
 cp -r $CAMINO_NODE_PATH $TEMP_PATH/camino-node-1/camino-node
 
+DEFAULT_SUBNET_EVM_VERSION=0.5.1
+SUBNET_EVM_VERSION=$DEFAULT_SUBNET_EVM_VERSION
+
+if [ ! -f ${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}/subnet-evm ]
+then
+    ############################
+    # download subnet-evm 
+    # https://github.com/ava-labs/subnet-evm/releases
+    GOARCH=$(go env GOARCH)
+    GOOS=$(go env GOOS)
+    DOWNLOAD_URL=https://github.com/ava-labs/subnet-evm/releases/download/v${SUBNET_EVM_VERSION}/subnet-evm_${SUBNET_EVM_VERSION}_linux_${GOARCH}.tar.gz
+    DOWNLOAD_PATH=${TEMP_PATH}/subnet-evm.tar.gz
+    if [[ ${GOOS} == "darwin" ]]; then
+      DOWNLOAD_URL=https://github.com/ava-labs/subnet-evm/releases/download/v${SUBNET_EVM_VERSION}/subnet-evm_${SUBNET_EVM_VERSION}_darwin_${GOARCH}.tar.gz
+    fi
+
+    rm -rf ${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}
+    rm -f ${DOWNLOAD_PATH}
+
+    echo "downloading subnet-evm ${SUBNET_EVM_VERSION} at ${DOWNLOAD_URL}"
+    curl -L ${DOWNLOAD_URL} -o ${DOWNLOAD_PATH}
+
+    echo "extracting downloaded subnet-evm"
+    mkdir ${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}
+    tar xzvf ${DOWNLOAD_PATH} -C ${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}
+    # NOTE: We are copying the subnet-evm binary here to a plugin hardcoded as srEXiWaHuhNyGwPUi444Tu47ZEDwxTWrbQiuD7FmgSAQ6X7Dy which corresponds to the VM name `subnetevm` used as such in the test
+    mkdir -p ${TEMP_PATH}/camino-node-1/plugins/
+    cp ${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}/subnet-evm ${TEMP_PATH}/camino-node-1/plugins/srEXiWaHuhNyGwPUi444Tu47ZEDwxTWrbQiuD7FmgSAQ6X7Dy
+    find ${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}/subnet-evm
+fi
+
 ############################
 echo "building runner"
 "$CAMINO_NETWORK_RUNNER_PATH/scripts/build.sh"
@@ -63,8 +94,9 @@ echo "running e2e tests"
 --log-level debug \
 --grpc-endpoint="0.0.0.0:8080" \
 --grpc-gateway-endpoint="0.0.0.0:8081" \
---camino-node-path-1=$TEMP_PATH/camino-node-1/camino-node # \
-# --camino-node-path-2=$TEMP_PATH/camino-node-2/camino-node
+--camino-node-path-1=$TEMP_PATH/camino-node-1/camino-node \
+--subnet-evm-path=${TEMP_PATH}/subnet-evm-v${SUBNET_EVM_VERSION}/subnet-evm
+# --camino-node-path-2=$TEMP_PATH/camino-node-2/camino-node \
 # camino-node-path-2 arg can be used to specify last compatible version to test its compatibility // TODO @evlekht verify it
 
 kill ${PID}

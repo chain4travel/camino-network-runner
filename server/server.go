@@ -25,6 +25,7 @@ import (
 	"github.com/ava-labs/avalanche-network-runner/network/node"
 	"github.com/ava-labs/avalanche-network-runner/rpcpb"
 	"github.com/ava-labs/avalanche-network-runner/utils"
+	"github.com/ava-labs/avalanche-network-runner/utils/constants"
 	"github.com/ava-labs/avalanchego/config"
 	"github.com/ava-labs/avalanchego/message"
 	"github.com/ava-labs/avalanchego/snow/networking/router"
@@ -48,9 +49,11 @@ const (
 
 	stopTimeout           = 5 * time.Second
 	defaultStartTimeout   = 5 * time.Minute
-	waitForHealthyTimeout = 2 * time.Minute
+	waitForHealthyTimeout = 3 * time.Minute
 
-	rootDataDirPrefix = "network-runner-root-data"
+	networkRootDirPrefix   = "network"
+	TimeParseLayout        = "2006-01-02 15:04:05"
+	StakingMinimumLeadTime = 25 * time.Second
 )
 
 var (
@@ -63,6 +66,9 @@ var (
 	ErrPeerNotFound           = errors.New("peer not found")
 	ErrStatusCanceled         = errors.New("gRPC stream status canceled")
 	ErrNoBlockchainSpec       = errors.New("no blockchain spec was provided")
+	ErrNoSubnetID             = errors.New("subnetID is missing")
+	ErrNoElasticSubnetSpec    = errors.New("no elastic subnet spec was provided")
+	ErrNoValidatorSpec        = errors.New("no validator spec was provided")
 )
 
 type Config struct {
@@ -298,9 +304,13 @@ func (s *server) Start(_ context.Context, req *rpcpb.StartRequest) (*rpcpb.Start
 	)
 
 	if len(rootDataDir) == 0 {
-		rootDataDir = os.TempDir()
+		rootDataDir = filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(rootDataDir, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
 	}
-	rootDataDir = filepath.Join(rootDataDir, rootDataDirPrefix)
+	rootDataDir = filepath.Join(rootDataDir, networkRootDirPrefix)
 	rootDataDir, err = utils.MkDirWithTimestamp(rootDataDir)
 	if err != nil {
 		return nil, err
@@ -348,13 +358,15 @@ func (s *server) Start(_ context.Context, req *rpcpb.StartRequest) (*rpcpb.Start
 		zap.String("global-node-config", globalNodeConfig),
 	)
 
-	if err := s.network.Start(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	defer cancel()
+	if err := s.network.Start(ctx); err != nil {
 		s.log.Warn("start failed to complete", zap.Error(err))
 		s.stopAndRemoveNetwork(nil)
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	ctx, cancel = context.WithTimeout(context.Background(), waitForHealthyTimeout)
 	defer cancel()
 	chainIDs, err := s.network.CreateChains(ctx, chainSpecs)
 	if err != nil {
@@ -393,10 +405,6 @@ func (s *server) updateClusterInfo() {
 		s.clusterInfo.CustomChains[chainID.String()] = chainInfo.info
 	}
 	s.clusterInfo.Subnets = s.network.subnets
-	s.clusterInfo.SubnetParticipants = make(map[string]*rpcpb.SubnetParticipants)
-	for subnetID, nodes := range s.network.subnetParticipants {
-		s.clusterInfo.SubnetParticipants[subnetID] = &rpcpb.SubnetParticipants{NodeNames: nodes}
-	}
 }
 
 // wait until some of this conditions is met:
@@ -478,7 +486,8 @@ func (s *server) CreateBlockchains(
 
 	// check that the given subnets exist
 	subnetsSet := set.Set[string]{}
-	subnetsSet.Add(s.clusterInfo.Subnets...)
+	subnetIDsList := maps.Keys(s.clusterInfo.Subnets)
+	subnetsSet.Add(subnetIDsList...)
 
 	for _, chainSpec := range chainSpecs {
 		if chainSpec.SubnetID != nil && !subnetsSet.Contains(*chainSpec.SubnetID) {
@@ -513,6 +522,247 @@ func (s *server) CreateBlockchains(
 	return &rpcpb.CreateBlockchainsResponse{ClusterInfo: clusterInfo, ChainIds: strChainIDs}, nil
 }
 
+func (s *server) AddPermissionlessDelegator(
+	_ context.Context,
+	req *rpcpb.AddPermissionlessDelegatorRequest,
+) (*rpcpb.AddPermissionlessDelegatorResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.network == nil {
+		return nil, ErrNotBootstrapped
+	}
+
+	s.log.Debug("AddPermissionlessDelegator")
+
+	if len(req.GetValidatorSpec()) == 0 {
+		return nil, ErrNoValidatorSpec
+	}
+
+	delegatorSpecList := []network.PermissionlessStakerSpec{}
+	for _, spec := range req.GetValidatorSpec() {
+		validatorSpec, err := getPermissionlessValidatorSpec(spec)
+		if err != nil {
+			return nil, err
+		}
+		delegatorSpecList = append(delegatorSpecList, validatorSpec)
+	}
+
+	// check that the given subnets exist
+	subnetsSet := set.Set[string]{}
+	subnetsSet.Add(maps.Keys(s.clusterInfo.Subnets)...)
+
+	for _, validatorSpec := range delegatorSpecList {
+		if validatorSpec.SubnetID == "" {
+			return nil, ErrNoSubnetID
+		} else if !subnetsSet.Contains(validatorSpec.SubnetID) {
+			return nil, fmt.Errorf("subnet id %q does not exist", validatorSpec.SubnetID)
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	defer cancel()
+	err := s.network.AddPermissionlessDelegators(ctx, delegatorSpecList)
+	if err != nil {
+		s.log.Error("failed to add permissionless delegator", zap.Error(err))
+		return nil, err
+	}
+
+	s.log.Info("successfully added permissionless delegator")
+
+	if err != nil {
+		return nil, err
+	}
+	return &rpcpb.AddPermissionlessDelegatorResponse{ClusterInfo: s.clusterInfo}, nil
+}
+
+func (s *server) AddPermissionlessValidator(
+	_ context.Context,
+	req *rpcpb.AddPermissionlessValidatorRequest,
+) (*rpcpb.AddPermissionlessValidatorResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.network == nil {
+		return nil, ErrNotBootstrapped
+	}
+
+	s.log.Debug("AddPermissionlessValidator")
+
+	if len(req.GetValidatorSpec()) == 0 {
+		return nil, ErrNoValidatorSpec
+	}
+
+	validatorSpecList := []network.PermissionlessStakerSpec{}
+	for _, spec := range req.GetValidatorSpec() {
+		validatorSpec, err := getPermissionlessValidatorSpec(spec)
+		if err != nil {
+			return nil, err
+		}
+		validatorSpecList = append(validatorSpecList, validatorSpec)
+	}
+
+	// check that the given subnets exist
+	subnetsSet := set.Set[string]{}
+	subnetsSet.Add(maps.Keys(s.clusterInfo.Subnets)...)
+
+	for _, validatorSpec := range validatorSpecList {
+		if validatorSpec.SubnetID == "" {
+			return nil, ErrNoSubnetID
+		} else if !subnetsSet.Contains(validatorSpec.SubnetID) {
+			return nil, fmt.Errorf("subnet id %q does not exist", validatorSpec.SubnetID)
+		}
+	}
+
+	s.clusterInfo.Healthy = false
+	s.clusterInfo.CustomChainsHealthy = false
+
+	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	defer cancel()
+	err := s.network.AddPermissionlessValidators(ctx, validatorSpecList)
+
+	s.updateClusterInfo()
+
+	if err != nil {
+		s.log.Error("failed to add permissionless validator", zap.Error(err))
+		return nil, err
+	}
+
+	s.log.Info("successfully added permissionless validator")
+
+	clusterInfo, err := deepCopy(s.clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+	return &rpcpb.AddPermissionlessValidatorResponse{ClusterInfo: clusterInfo}, nil
+}
+
+func (s *server) RemoveSubnetValidator(
+	_ context.Context,
+	req *rpcpb.RemoveSubnetValidatorRequest,
+) (*rpcpb.RemoveSubnetValidatorResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.network == nil {
+		return nil, ErrNotBootstrapped
+	}
+
+	s.log.Debug("RemoveSubnetValidator")
+
+	if len(req.GetValidatorSpec()) == 0 {
+		return nil, ErrNoValidatorSpec
+	}
+
+	validatorSpecList := []network.RemoveSubnetValidatorSpec{}
+	for _, spec := range req.GetValidatorSpec() {
+		validatorSpec := getRemoveSubnetValidatorSpec(spec)
+		validatorSpecList = append(validatorSpecList, validatorSpec)
+	}
+
+	// check that the given subnets exist
+	subnetsSet := set.Set[string]{}
+	subnetsSet.Add(maps.Keys(s.clusterInfo.Subnets)...)
+
+	for _, validatorSpec := range validatorSpecList {
+		if validatorSpec.SubnetID == "" {
+			return nil, ErrNoSubnetID
+		} else if !subnetsSet.Contains(validatorSpec.SubnetID) {
+			return nil, fmt.Errorf("subnet id %q does not exist", validatorSpec.SubnetID)
+		}
+	}
+
+	s.clusterInfo.Healthy = false
+	s.clusterInfo.CustomChainsHealthy = false
+
+	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	defer cancel()
+	err := s.network.RemoveSubnetValidator(ctx, validatorSpecList)
+
+	s.updateClusterInfo()
+
+	if err != nil {
+		s.log.Error("failed to remove subnet validator", zap.Error(err))
+		return nil, err
+	}
+
+	s.log.Info("successfully removed subnet validator")
+
+	clusterInfo, err := deepCopy(s.clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+	return &rpcpb.RemoveSubnetValidatorResponse{ClusterInfo: clusterInfo}, nil
+}
+
+func (s *server) TransformElasticSubnets(
+	_ context.Context,
+	req *rpcpb.TransformElasticSubnetsRequest,
+) (*rpcpb.TransformElasticSubnetsResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.network == nil {
+		return nil, ErrNotBootstrapped
+	}
+
+	s.log.Debug("TransformElasticSubnet")
+
+	if len(req.GetElasticSubnetSpec()) == 0 {
+		return nil, ErrNoElasticSubnetSpec
+	}
+
+	elasticSubnetSpecList := []network.ElasticSubnetSpec{}
+	for _, spec := range req.GetElasticSubnetSpec() {
+		elasticSubnetSpec := getNetworkElasticSubnetSpec(spec)
+		elasticSubnetSpecList = append(elasticSubnetSpecList, elasticSubnetSpec)
+	}
+
+	// check that the given subnets exist
+	subnetsSet := set.Set[string]{}
+	subnetsSet.Add(maps.Keys(s.clusterInfo.Subnets)...)
+
+	for _, elasticSubnetSpec := range elasticSubnetSpecList {
+		if elasticSubnetSpec.SubnetID == nil {
+			return nil, ErrNoSubnetID
+		} else if !subnetsSet.Contains(*elasticSubnetSpec.SubnetID) {
+			return nil, fmt.Errorf("subnet id %q does not exist", *elasticSubnetSpec.SubnetID)
+		}
+	}
+
+	s.clusterInfo.Healthy = false
+	s.clusterInfo.CustomChainsHealthy = false
+
+	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	defer cancel()
+	txIDs, assetIDs, err := s.network.TransformSubnets(ctx, elasticSubnetSpecList)
+
+	s.updateClusterInfo()
+
+	if err != nil {
+		s.log.Error("failed to transform subnet into elastic subnet", zap.Error(err))
+		return nil, err
+	}
+
+	s.log.Info("subnet transformed into elastic subnet")
+
+	strTXIDs := []string{}
+	for _, txID := range txIDs {
+		strTXIDs = append(strTXIDs, txID.String())
+	}
+
+	strAssetIDs := []string{}
+	for _, assetID := range assetIDs {
+		strAssetIDs = append(strAssetIDs, assetID.String())
+	}
+
+	clusterInfo, err := deepCopy(s.clusterInfo)
+	if err != nil {
+		return nil, err
+	}
+	return &rpcpb.TransformElasticSubnetsResponse{ClusterInfo: clusterInfo, TxIds: strTXIDs, AssetIds: strAssetIDs}, nil
+}
+
 func (s *server) CreateSubnets(_ context.Context, req *rpcpb.CreateSubnetsRequest) (*rpcpb.CreateSubnetsResponse, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -525,10 +775,7 @@ func (s *server) CreateSubnets(_ context.Context, req *rpcpb.CreateSubnetsReques
 
 	subnetSpecs := []network.SubnetSpec{}
 	for _, spec := range req.GetSubnetSpecs() {
-		subnetSpec, err := getNetworkSubnetSpec(spec)
-		if err != nil {
-			return nil, err
-		}
+		subnetSpec := getNetworkSubnetSpec(spec)
 		subnetSpecs = append(subnetSpecs, subnetSpec)
 	}
 
@@ -878,7 +1125,7 @@ func (s *server) PauseNode(ctx context.Context, req *rpcpb.PauseNodeRequest) (*r
 		return nil, err
 	}
 
-	if err := s.network.updateNodeInfo(); err != nil {
+	if err := s.network.UpdateNodeInfo(); err != nil {
 		return nil, err
 	}
 
@@ -906,7 +1153,7 @@ func (s *server) ResumeNode(ctx context.Context, req *rpcpb.ResumeNodeRequest) (
 		return nil, err
 	}
 
-	if err := s.network.updateNodeInfo(); err != nil {
+	if err := s.network.UpdateNodeInfo(); err != nil {
 		return nil, err
 	}
 
@@ -1015,12 +1262,16 @@ func (s *server) LoadSnapshot(_ context.Context, req *rpcpb.LoadSnapshotRequest)
 		return nil, ErrAlreadyBootstrapped
 	}
 
+	var err error
 	rootDataDir := req.GetRootDataDir()
 	if len(rootDataDir) == 0 {
-		rootDataDir = os.TempDir()
+		rootDataDir = filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(rootDataDir, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
 	}
-	rootDataDir = filepath.Join(rootDataDir, rootDataDirPrefix)
-	var err error
+	rootDataDir = filepath.Join(rootDataDir, networkRootDirPrefix)
 	rootDataDir, err = utils.MkDirWithTimestamp(rootDataDir)
 	if err != nil {
 		return nil, err
@@ -1056,24 +1307,16 @@ func (s *server) LoadSnapshot(_ context.Context, req *rpcpb.LoadSnapshotRequest)
 		return nil, err
 	}
 
-	// update cluster info non-blocking
-	// the user is expected to poll this latest information
-	// to decide cluster/subnet readiness
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
-		defer cancel()
-		err := s.network.AwaitHealthyAndUpdateNetworkInfo(ctx)
-		s.mu.Lock()
-		defer s.mu.Unlock()
-		if err != nil {
-			s.log.Warn("snapshot load failed to complete. stopping network and cleaning up network", zap.Error(err))
-			s.stopAndRemoveNetwork(err)
-			return
-		} else {
-			s.updateClusterInfo()
-		}
-		s.log.Info("network healthy")
-	}()
+	ctx, cancel := context.WithTimeout(context.Background(), waitForHealthyTimeout)
+	defer cancel()
+	err = s.network.AwaitHealthyAndUpdateNetworkInfo(ctx)
+	if err != nil {
+		s.log.Warn("snapshot load failed to complete. stopping network and cleaning up network", zap.Error(err))
+		s.stopAndRemoveNetwork(err)
+		return nil, err
+	}
+	s.updateClusterInfo()
+	s.log.Info("network healthy")
 
 	clusterInfo, err := deepCopy(s.clusterInfo)
 	if err != nil {
@@ -1169,6 +1412,70 @@ func isClientCanceled(ctxErr error, err error) bool {
 	return false
 }
 
+func getNetworkElasticSubnetSpec(
+	spec *rpcpb.ElasticSubnetSpec,
+) network.ElasticSubnetSpec {
+	minStakeDuration := time.Duration(spec.MinStakeDuration) * time.Hour
+	maxStakeDuration := time.Duration(spec.MaxStakeDuration) * time.Hour
+
+	elasticSubnetSpec := network.ElasticSubnetSpec{
+		SubnetID:                 &spec.SubnetId,
+		AssetName:                spec.AssetName,
+		AssetSymbol:              spec.AssetSymbol,
+		InitialSupply:            spec.InitialSupply,
+		MaxSupply:                spec.MaxSupply,
+		MinConsumptionRate:       spec.MinConsumptionRate,
+		MaxConsumptionRate:       spec.MaxConsumptionRate,
+		MinValidatorStake:        spec.MinValidatorStake,
+		MaxValidatorStake:        spec.MaxValidatorStake,
+		MinStakeDuration:         minStakeDuration,
+		MaxStakeDuration:         maxStakeDuration,
+		MinDelegationFee:         spec.MinDelegationFee,
+		MinDelegatorStake:        spec.MinDelegatorStake,
+		MaxValidatorWeightFactor: byte(spec.MaxValidatorWeightFactor),
+		UptimeRequirement:        spec.UptimeRequirement,
+	}
+	return elasticSubnetSpec
+}
+
+func getPermissionlessValidatorSpec(
+	spec *rpcpb.PermissionlessStakerSpec,
+) (network.PermissionlessStakerSpec, error) {
+	var startTime time.Time
+	var err error
+	if spec.StartTime != "" {
+		startTime, err = time.Parse(TimeParseLayout, spec.StartTime)
+		if err != nil {
+			return network.PermissionlessStakerSpec{}, err
+		}
+		if startTime.Before(time.Now().Add(StakingMinimumLeadTime)) {
+			return network.PermissionlessStakerSpec{}, fmt.Errorf("time should be at least %s in the future for validator spec of %s", StakingMinimumLeadTime, spec.NodeName)
+		}
+	}
+
+	stakeDuration := time.Duration(spec.StakeDuration) * time.Hour
+
+	validatorSpec := network.PermissionlessStakerSpec{
+		SubnetID:      spec.SubnetId,
+		AssetID:       spec.AssetId,
+		NodeName:      spec.NodeName,
+		StakedAmount:  spec.StakedTokenAmount,
+		StartTime:     startTime,
+		StakeDuration: stakeDuration,
+	}
+	return validatorSpec, nil
+}
+
+func getRemoveSubnetValidatorSpec(
+	spec *rpcpb.RemoveSubnetValidatorSpec,
+) network.RemoveSubnetValidatorSpec {
+	validatorSpec := network.RemoveSubnetValidatorSpec{
+		SubnetID:  spec.SubnetId,
+		NodeNames: spec.GetNodeNames(),
+	}
+	return validatorSpec
+}
+
 func getNetworkBlockchainSpec(
 	log logging.Logger,
 	spec *rpcpb.BlockchainSpec,
@@ -1189,49 +1496,33 @@ func getNetworkBlockchainSpec(
 
 	// there is no default plugindir from the ANR point of view, will not check if not given
 	if pluginDir != "" {
-		if err := utils.CheckPluginPaths(
+		if err := utils.CheckPluginPath(
 			filepath.Join(pluginDir, vmID.String()),
-			spec.Genesis,
 		); err != nil {
 			return network.BlockchainSpec{}, err
 		}
 	}
 
-	genesisBytes, err := os.ReadFile(spec.Genesis)
-	if err != nil {
-		return network.BlockchainSpec{}, err
-	}
+	genesisBytes := readFileOrString(spec.Genesis)
 
 	var chainConfigBytes []byte
 	if spec.ChainConfig != "" {
-		chainConfigBytes, err = os.ReadFile(spec.ChainConfig)
-		if err != nil {
-			return network.BlockchainSpec{}, err
-		}
+		chainConfigBytes = readFileOrString(spec.ChainConfig)
 	}
 
 	var networkUpgradeBytes []byte
 	if spec.NetworkUpgrade != "" {
-		networkUpgradeBytes, err = os.ReadFile(spec.NetworkUpgrade)
-		if err != nil {
-			return network.BlockchainSpec{}, err
-		}
+		networkUpgradeBytes = readFileOrString(spec.NetworkUpgrade)
 	}
 
 	var subnetConfigBytes []byte
 	if spec.SubnetSpec != nil && spec.SubnetSpec.SubnetConfig != "" {
-		subnetConfigBytes, err = os.ReadFile(spec.SubnetSpec.SubnetConfig)
-		if err != nil {
-			return network.BlockchainSpec{}, err
-		}
+		subnetConfigBytes = readFileOrString(spec.SubnetSpec.SubnetConfig)
 	}
 
 	perNodeChainConfig := map[string][]byte{}
 	if spec.PerNodeChainConfig != "" {
-		perNodeChainConfigBytes, err := os.ReadFile(spec.PerNodeChainConfig)
-		if err != nil {
-			return network.BlockchainSpec{}, err
-		}
+		perNodeChainConfigBytes := readFileOrString(spec.PerNodeChainConfig)
 
 		perNodeChainConfigMap := map[string]interface{}{}
 		if err := json.Unmarshal(perNodeChainConfigBytes, &perNodeChainConfigMap); err != nil {
@@ -1270,17 +1561,23 @@ func getNetworkBlockchainSpec(
 
 func getNetworkSubnetSpec(
 	spec *rpcpb.SubnetSpec,
-) (network.SubnetSpec, error) {
+) network.SubnetSpec {
 	var subnetConfigBytes []byte
-	var err error
 	if spec.SubnetConfig != "" {
-		subnetConfigBytes, err = os.ReadFile(spec.SubnetConfig)
-		if err != nil {
-			return network.SubnetSpec{}, err
-		}
+		subnetConfigBytes = readFileOrString(spec.SubnetConfig)
 	}
 	return network.SubnetSpec{
 		Participants: spec.Participants,
 		SubnetConfig: subnetConfigBytes,
-	}, nil
+	}
+}
+
+// if [conf] is a readable file path, returns the file contents
+// if not, returns [conf] as a byte slice
+func readFileOrString(conf string) []byte {
+	confBytes, err := os.ReadFile(conf)
+	if err != nil {
+		return []byte(conf)
+	}
+	return confBytes
 }
