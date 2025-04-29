@@ -111,6 +111,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.11.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/mock v0.2.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect
@@ -125,6 +126,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/ava-labs/coreth => github.com/chain4travel/caminoethvm v1.0.0-rc1
+replace github.com/ava-labs/coreth => github.com/chain4travel/caminoethvm v1.1.0
 
-replace github.com/ava-labs/avalanchego => github.com/chain4travel/caminogo v1.0.0-rc1
+replace github.com/ava-labs/avalanchego => github.com/chain4travel/caminogo v1.2.0-rc1
