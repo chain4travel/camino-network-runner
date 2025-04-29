@@ -362,6 +362,15 @@ curl -X POST -k http://localhost:8081/v1/control/createblockchains -d '{"pluginD
 camino-network-runner control create-blockchains '[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_PATH'"}]' --plugin-dir $PLUGIN_DIR
 ```
 
+Genesis can be given either as file path or file contents:
+
+```bash
+curl -X POST -k http://localhost:8081/v1/control/createblockchains -d '{"pluginDir":"'$PLUGIN_DIR'","blockchainSpecs":[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_CONTENTS'"}]}'
+
+# or
+avalanche-network-runner control create-blockchains '[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_CONTENTS'"}]' --plugin-dir $PLUGIN_DIR
+```
+
 To create a blockchain with a subnet id (does not require restart):
 
 ```bash
@@ -382,6 +391,7 @@ camino-network-runner control create-blockchains '[{"vm_name":"'$VM_NAME'","gene
 
 To create a blockchain with a new subnet id with select nodes as participants (requires network restart):
 (New nodes will first be added as primary validators similar to the process in `create-subnets`)
+
 ```bash
 curl -X POST -k http://localhost:8081/v1/control/createblockchains -d '{"pluginDir":"'$PLUGIN_DIR'","blockchainSpecs":[{"vm_name":"'$VM_NAME'","genesis":"'$GENESIS_PATH'", "subnet_spec": "{"participants": ["node1", "node2", "testNode"]}"]}'
 

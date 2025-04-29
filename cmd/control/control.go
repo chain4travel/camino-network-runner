@@ -10,12 +10,14 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	"github.com/ava-labs/avalanche-network-runner/client"
 	"github.com/ava-labs/avalanche-network-runner/local"
 	"github.com/ava-labs/avalanche-network-runner/rpcpb"
+	"github.com/ava-labs/avalanche-network-runner/utils"
 	"github.com/ava-labs/avalanche-network-runner/utils/constants"
 	"github.com/ava-labs/avalanche-network-runner/ux"
 	"github.com/ava-labs/avalanchego/utils/logging"
@@ -27,8 +29,11 @@ func init() {
 	cobra.EnablePrefixMatching = true
 }
 
+const clientRootDirPrefix = "client"
+
 var (
 	logLevel       string
+	logDir         string
 	trackSubnets   string
 	endpoint       string
 	dialTimeout    time.Duration
@@ -45,6 +50,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVar(&logLevel, "log-level", logging.Info.String(), "log level")
+	cmd.PersistentFlags().StringVar(&logDir, "log-dir", "", "log directory")
 	cmd.PersistentFlags().StringVar(&endpoint, "endpoint", "0.0.0.0:8080", "server endpoint")
 	cmd.PersistentFlags().DurationVar(&dialTimeout, "dial-timeout", 10*time.Second, "server dial timeout")
 	cmd.PersistentFlags().DurationVar(&requestTimeout, "request-timeout", 3*time.Minute, "client request timeout")
@@ -54,6 +60,7 @@ func NewCommand() *cobra.Command {
 		newStartCommand(),
 		newCreateBlockchainsCommand(),
 		newCreateSubnetsCommand(),
+		newTransformElasticSubnetsCommand(),
 		newHealthCommand(),
 		newWaitForHealthyCommand(),
 		newURIsCommand(),
@@ -73,23 +80,6 @@ func NewCommand() *cobra.Command {
 		newGetSnapshotNamesCommand(),
 	)
 
-	lvl, err := logging.ToLevel(logLevel)
-	if err != nil {
-		panic(err)
-	}
-	lcfg := logging.Config{
-		DisplayLevel: lvl,
-		// this will result in no written logs, just stdout
-		// to enable log files, a logDir param should be added and
-		// accordingly possibly a flag
-		LogLevel: logging.Off,
-	}
-	logFactory := logging.NewFactory(lcfg)
-	log, err = logFactory.Make(constants.LogNameControl)
-	if err != nil {
-		panic(err)
-	}
-
 	return cmd
 }
 
@@ -108,6 +98,35 @@ var (
 	reassignPortsIfUsed bool
 	dynamicPorts        bool
 )
+
+func setLogs() error {
+	var err error
+	if logDir == "" {
+		anrRootDir := filepath.Join(os.TempDir(), constants.RootDirPrefix)
+		err = os.MkdirAll(anrRootDir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		clientRootDir := filepath.Join(anrRootDir, clientRootDirPrefix)
+		logDir, err = utils.MkDirWithTimestamp(clientRootDir)
+		if err != nil {
+			return err
+		}
+	}
+	lvl, err := logging.ToLevel(logLevel)
+	if err != nil {
+		return err
+	}
+	logFactory := logging.NewFactory(logging.Config{
+		RotatingWriterConfig: logging.RotatingWriterConfig{
+			Directory: logDir,
+		},
+		DisplayLevel: lvl,
+		LogLevel:     lvl,
+	})
+	log, err = logFactory.Make(constants.LogNameControl)
+	return err
+}
 
 func newRPCVersionCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -380,6 +399,44 @@ func createSubnetsFunc(_ *cobra.Command, args []string) error {
 	}
 
 	ux.Print(log, logging.Green.Wrap("create-subnets response: %+v"), info)
+	return nil
+}
+
+func newTransformElasticSubnetsCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "elastic-subnets [options]",
+		Short: "Transform subnets to elastic subnets.",
+		RunE:  transformElasticSubnetsFunc,
+		Args:  cobra.ExactArgs(1),
+	}
+	return cmd
+}
+
+func transformElasticSubnetsFunc(_ *cobra.Command, args []string) error {
+	cli, err := newClient()
+	if err != nil {
+		return err
+	}
+	defer cli.Close()
+
+	elasticSubnetSpecsStr := args[0]
+
+	elasticSubnetSpecs := []*rpcpb.ElasticSubnetSpec{}
+	if err := json.Unmarshal([]byte(elasticSubnetSpecsStr), &elasticSubnetSpecs); err != nil {
+		return err
+	}
+
+	ctx := getAsyncContext()
+
+	info, err := cli.TransformElasticSubnets(
+		ctx,
+		elasticSubnetSpecs,
+	)
+	if err != nil {
+		return err
+	}
+
+	ux.Print(log, logging.Green.Wrap("elastic-subnets response: %+v"), info)
 	return nil
 }
 
@@ -1170,6 +1227,9 @@ func getSnapshotNamesFunc(*cobra.Command, []string) error {
 }
 
 func newClient() (client.Client, error) {
+	if err := setLogs(); err != nil {
+		return nil, err
+	}
 	return client.New(client.Config{
 		Endpoint:    endpoint,
 		DialTimeout: dialTimeout,

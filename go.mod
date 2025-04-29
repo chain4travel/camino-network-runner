@@ -3,13 +3,13 @@ module github.com/ava-labs/avalanche-network-runner
 go 1.19
 
 require (
-	github.com/ava-labs/avalanchego v1.9.16
-	github.com/ava-labs/coreth v0.11.9-rc.0
+	github.com/ava-labs/avalanchego v1.10.1
+	github.com/ava-labs/coreth v0.12.1
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0
-	github.com/onsi/ginkgo/v2 v2.7.0
-	github.com/onsi/gomega v1.25.0
-	github.com/otiai10/copy v1.9.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
+	github.com/onsi/ginkgo/v2 v2.8.1
+	github.com/onsi/gomega v1.26.0
+	github.com/otiai10/copy v1.11.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.6.1
@@ -19,12 +19,13 @@ require (
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
 	golang.org/x/mod v0.8.0
 	golang.org/x/sync v0.1.0
-	google.golang.org/genproto v0.0.0-20221207170731-23e4bf6bdc37
-	google.golang.org/grpc v1.53.0-dev
-	google.golang.org/protobuf v1.28.1
+	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
+	google.golang.org/grpc v1.56.0-dev
+	google.golang.org/protobuf v1.30.0
 )
 
 require (
+	github.com/DataDog/zstd v1.5.2 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/VictoriaMetrics/fastcache v1.10.0 // indirect
@@ -32,7 +33,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/btcsuite/btcd/btcutil v1.1.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.3 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
@@ -47,7 +48,7 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
