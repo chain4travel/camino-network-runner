@@ -29,7 +29,7 @@ import (
 	"github.com/ava-labs/avalanchego/network/peer"
 	"github.com/ava-labs/avalanchego/staking"
 	"github.com/ava-labs/avalanchego/utils/beacon"
-	"github.com/ava-labs/avalanchego/utils/constants"
+	camgoConstants "github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/utils/crypto/bls"
 	"github.com/ava-labs/avalanchego/utils/ips"
 	"github.com/ava-labs/avalanchego/utils/logging"
@@ -160,7 +160,7 @@ func init() {
 		if !ok {
 			panic(errors.New("could not get camino"))
 		}
-		genesisMap["networkID"] = constants.KopernikusID
+		genesisMap["networkID"] = camgoConstants.KopernikusID
 		genesisMap["initialStakeDuration"] = float64(0)
 		genesisMap["initialStakedFunds"] = []string{}
 		genesisMap["initialStakers"] = []genesis.UnparsedStaker{}

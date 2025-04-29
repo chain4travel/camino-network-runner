@@ -21,7 +21,6 @@ import (
 	"github.com/ava-labs/avalanchego/api/admin"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/message"
-	"github.com/ava-labs/avalanchego/utils/compression"
 	avago_constants "github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/ava-labs/avalanchego/vms/platformvm"
 	"github.com/prometheus/client_golang/prometheus"
@@ -44,8 +43,8 @@ func TestE2e(t *testing.T) {
 }
 
 const (
-	apiflags   = `{"api-admin-enabled-secret":"` + constants.APIAdminKey + `"}`
-	noapiflags = `{"api-admin-enabled-secret":""}`
+	apiflags            = `{"api-admin-enabled-secret":"` + constants.APIAdminKey + `"}`
+	noapiflags          = `{"api-admin-enabled-secret":""}`
 	clientRootDirPrefix = "client"
 )
 
