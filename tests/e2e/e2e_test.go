@@ -21,6 +21,7 @@ import (
 	"github.com/ava-labs/avalanchego/api/admin"
 	"github.com/ava-labs/avalanchego/ids"
 	"github.com/ava-labs/avalanchego/message"
+	"github.com/ava-labs/avalanchego/utils/compression"
 	avago_constants "github.com/ava-labs/avalanchego/utils/constants"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -314,9 +315,10 @@ var _ = ginkgo.Describe("[Start/Remove/Restart/Add/Stop]", func() {
 			ux.Print(log, logging.Green.Wrap("successfully attached peer, peers: %+v"), v.Peers)
 
 			mc, err := message.NewCreator(
+				&logging.MockLogger{},
 				prometheus.NewRegistry(),
 				"",
-				true,
+				compression.TypeZstd,
 				10*time.Second,
 			)
 			gomega.Ω(err).Should(gomega.BeNil())
